@@ -10,6 +10,15 @@ panel del tendero, pagos y cuenta de fiado.
 - **Supabase** para datos, sesión y pedidos en tiempo real
 - **Riverpod** para el estado, **go_router** para la navegación
 
+<p align="center">
+  <img src="docs/screenshots/catalog.png" width="200" alt="Catálogo y carrito">
+  <img src="docs/screenshots/checkout-yape.png" width="200" alt="Pago con Yape">
+  <img src="docs/screenshots/shopkeeper-orders.png" width="200" alt="Pedidos del tendero">
+  <img src="docs/screenshots/production-recipe.png" width="200" alt="Producción con costo desde la receta">
+</p>
+
+<p align="center"><sub>Catálogo del cliente · pago con Yape · pedidos del tendero · producción con costo desde la receta (modo demo)</sub></p>
+
 ## Correr el proyecto
 
 Sin credenciales arranca en **modo demo** con datos de ejemplo en memoria: sirve

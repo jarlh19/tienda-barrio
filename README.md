@@ -10,6 +10,15 @@ cart, orders, shopkeeper panel, payments and store credit ("fiado").
 - **Supabase** for data, auth and real-time orders
 - **Riverpod** for state, **go_router** for navigation
 
+<p align="center">
+  <img src="docs/screenshots/catalog.png" width="200" alt="Catalog and cart">
+  <img src="docs/screenshots/checkout-yape.png" width="200" alt="Checkout with Yape">
+  <img src="docs/screenshots/shopkeeper-orders.png" width="200" alt="Shopkeeper orders">
+  <img src="docs/screenshots/production-recipe.png" width="200" alt="Production costed from the recipe">
+</p>
+
+<p align="center"><sub>Customer catalog · checkout with Yape · shopkeeper orders · production costed from the recipe (demo mode)</sub></p>
+
 ## Running the project
 
 Without credentials it starts in **demo mode** with sample data in memory: you
