@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- La misma semilla del tema en lib/core/tema.dart. -->
+    <color name="marca">#FF1B7F5A</color>
+</resources>
