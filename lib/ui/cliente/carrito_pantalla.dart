@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/formato.dart';
 import '../../estado/carrito.dart';
+import '../../l10n/app_localizations.dart';
 import '../comun/widgets.dart';
 
 class CarritoPantalla extends ConsumerWidget {
@@ -15,29 +16,30 @@ class CarritoPantalla extends ConsumerWidget {
     final carrito = ref.read(carritoProvider.notifier);
     final total = ref.watch(totalCarritoProvider);
     final t = Theme.of(context);
+    final l = L.of(context);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Mi pedido'),
+        title: Text(l.carritoTitulo),
         actions: [
           if (items.isNotEmpty)
             TextButton(
               onPressed: () {
                 carrito.limpiar();
-                mostrarAviso(context, 'Carrito vaciado');
+                mostrarAviso(context, l.carritoVaciado);
               },
-              child: const Text('Vaciar'),
+              child: Text(l.vaciar),
             ),
         ],
       ),
       body: items.isEmpty
           ? EstadoVacio(
               icono: Icons.shopping_cart_outlined,
-              titulo: 'Tu carrito está vacío',
-              detalle: 'Agrega productos del catálogo para hacer tu pedido.',
+              titulo: l.carritoVacioTitulo,
+              detalle: l.carritoVacioDetalle,
               accion: FilledButton.tonal(
                 onPressed: () => context.pop(),
-                child: const Text('Ver catálogo'),
+                child: Text(l.verCatalogo),
               ),
             )
           : ListView.separated(
@@ -102,7 +104,7 @@ class CarritoPantalla extends ConsumerWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Total', style: t.textTheme.titleMedium),
+                        Text(l.total, style: t.textTheme.titleMedium),
                         Text(
                           Formato.soles(total),
                           style: t.textTheme.titleLarge
@@ -113,7 +115,7 @@ class CarritoPantalla extends ConsumerWidget {
                     const SizedBox(height: 12),
                     FilledButton(
                       onPressed: () => context.push('/checkout'),
-                      child: const Text('Continuar con el pago'),
+                      child: Text(l.continuarPago),
                     ),
                   ],
                 ),

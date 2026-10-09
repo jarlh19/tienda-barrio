@@ -48,7 +48,10 @@ class PagoLocal implements PasarelaPago {
       case MetodoPago.plin:
         if (referencia.trim().length < 4) {
           throw ErrorApp(
-              'Ingresa el código de operación de tu ${metodo.etiqueta}.');
+            'Ingresa el código de operación de tu Yape o Plin.',
+            aviso: Aviso.faltaCodigoOperacion,
+            datos: {'metodo': metodo},
+          );
         }
         return ResultadoPago(
           estado: EstadoPago.verificando,
@@ -66,6 +69,7 @@ class PagoLocal implements PasarelaPago {
         throw ErrorApp(
           'El pago con tarjeta aún no está habilitado. '
           'Usa Yape, Plin, efectivo o fiado.',
+          aviso: Aviso.tarjetaNoHabilitada,
         );
     }
   }

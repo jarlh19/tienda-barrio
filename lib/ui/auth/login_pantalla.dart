@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/config.dart';
 import '../../estado/providers.dart';
+import '../../l10n/app_localizations.dart';
 import '../comun/widgets.dart';
 
 class LoginPantalla extends ConsumerStatefulWidget {
@@ -87,6 +88,7 @@ class _LoginPantallaState extends ConsumerState<LoginPantalla> {
   @override
   Widget build(BuildContext context) {
     final t = Theme.of(context);
+    final l = L.of(context);
     final hayGoogle = ref.watch(hayGoogleProvider);
     // Sin Google no hay alternativa que ofrecer: el formulario es el camino.
     final mostrarForm = _usarCorreo || !hayGoogle;
@@ -114,7 +116,7 @@ class _LoginPantallaState extends ConsumerState<LoginPantalla> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Pide lo de siempre, sin salir de casa',
+                      l.loginLema,
                       textAlign: TextAlign.center,
                       style: t.textTheme.bodyMedium
                           ?.copyWith(color: t.colorScheme.onSurfaceVariant),
@@ -127,8 +129,7 @@ class _LoginPantallaState extends ConsumerState<LoginPantalla> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Usa la cuenta que ya tienes en el celular. '
-                        'No llenas nada.',
+                        l.loginGoogleDetalle,
                         textAlign: TextAlign.center,
                         style: t.textTheme.bodySmall
                             ?.copyWith(color: t.colorScheme.onSurfaceVariant),
@@ -138,7 +139,7 @@ class _LoginPantallaState extends ConsumerState<LoginPantalla> {
                           onPressed: _cargando
                               ? null
                               : () => setState(() => _usarCorreo = true),
-                          child: const Text('Prefiero usar mi correo'),
+                          child: Text(l.loginPrefieroCorreo),
                         ),
                     ],
                     if (mostrarForm) ...[
@@ -152,7 +153,7 @@ class _LoginPantallaState extends ConsumerState<LoginPantalla> {
                                 padding:
                                     const EdgeInsets.symmetric(horizontal: 12),
                                 child: Text(
-                                  'o con tu correo',
+                                  l.loginOCorreo,
                                   style: t.textTheme.labelMedium?.copyWith(
                                       color: t.colorScheme.onSurfaceVariant),
                                 ),
@@ -165,12 +166,12 @@ class _LoginPantallaState extends ConsumerState<LoginPantalla> {
                         TextFormField(
                           controller: _nombre,
                           textCapitalization: TextCapitalization.words,
-                          decoration: const InputDecoration(
-                            labelText: 'Nombre',
-                            prefixIcon: Icon(Icons.person_outline),
+                          decoration: InputDecoration(
+                            labelText: l.campoNombre,
+                            prefixIcon: const Icon(Icons.person_outline),
                           ),
                           validator: (v) => (v == null || v.trim().length < 2)
-                              ? 'Escribe tu nombre'
+                              ? l.validaNombre
                               : null,
                         ),
                         const SizedBox(height: 12),
@@ -179,12 +180,12 @@ class _LoginPantallaState extends ConsumerState<LoginPantalla> {
                         controller: _email,
                         keyboardType: TextInputType.emailAddress,
                         autofillHints: const [AutofillHints.email],
-                        decoration: const InputDecoration(
-                          labelText: 'Correo',
-                          prefixIcon: Icon(Icons.mail_outline),
+                        decoration: InputDecoration(
+                          labelText: l.campoCorreo,
+                          prefixIcon: const Icon(Icons.mail_outline),
                         ),
                         validator: (v) => (v == null || !v.contains('@'))
-                            ? 'Correo no válido'
+                            ? l.validaCorreo
                             : null,
                       ),
                       const SizedBox(height: 12),
@@ -192,7 +193,7 @@ class _LoginPantallaState extends ConsumerState<LoginPantalla> {
                         controller: _clave,
                         obscureText: _ocultarClave,
                         decoration: InputDecoration(
-                          labelText: 'Contraseña',
+                          labelText: l.campoClave,
                           prefixIcon: const Icon(Icons.lock_outline),
                           suffixIcon: IconButton(
                             icon: Icon(_ocultarClave
@@ -203,7 +204,7 @@ class _LoginPantallaState extends ConsumerState<LoginPantalla> {
                           ),
                         ),
                         validator: (v) => (v == null || v.length < 6)
-                            ? 'Mínimo 6 caracteres'
+                            ? l.validaClave
                             : null,
                       ),
                       if (_registrando) ...[
@@ -211,17 +212,17 @@ class _LoginPantallaState extends ConsumerState<LoginPantalla> {
                         TextFormField(
                           controller: _telefono,
                           keyboardType: TextInputType.phone,
-                          decoration: const InputDecoration(
-                            labelText: 'Celular',
-                            prefixIcon: Icon(Icons.phone_outlined),
+                          decoration: InputDecoration(
+                            labelText: l.campoCelular,
+                            prefixIcon: const Icon(Icons.phone_outlined),
                           ),
                         ),
                         const SizedBox(height: 12),
                         TextFormField(
                           controller: _direccion,
-                          decoration: const InputDecoration(
-                            labelText: 'Dirección de entrega',
-                            prefixIcon: Icon(Icons.home_outlined),
+                          decoration: InputDecoration(
+                            labelText: l.campoDireccionEntrega,
+                            prefixIcon: const Icon(Icons.home_outlined),
                           ),
                         ),
                       ],
@@ -235,7 +236,9 @@ class _LoginPantallaState extends ConsumerState<LoginPantalla> {
                                 child:
                                     CircularProgressIndicator(strokeWidth: 2),
                               )
-                            : Text(_registrando ? 'Crear cuenta' : 'Entrar'),
+                            : Text(_registrando
+                                ? l.loginCrearCuenta
+                                : l.loginEntrar),
                       ),
                       TextButton(
                         onPressed: _cargando
@@ -243,14 +246,14 @@ class _LoginPantallaState extends ConsumerState<LoginPantalla> {
                             : () =>
                                 setState(() => _registrando = !_registrando),
                         child: Text(_registrando
-                            ? 'Ya tengo cuenta'
-                            : 'No tengo cuenta, quiero registrarme'),
+                            ? l.loginYaTengoCuenta
+                            : l.loginNoTengoCuenta),
                       ),
                     ],
                     if (Config.modoDemo) ...[
                       const Divider(height: 32),
                       Text(
-                        'Modo demo — entra sin registrarte',
+                        l.loginDemo,
                         textAlign: TextAlign.center,
                         style: t.textTheme.labelMedium
                             ?.copyWith(color: t.colorScheme.onSurfaceVariant),
@@ -264,7 +267,7 @@ class _LoginPantallaState extends ConsumerState<LoginPantalla> {
                                   ? null
                                   : () => _entrarDemo('cliente@demo.com'),
                               icon: const Icon(Icons.shopping_basket_outlined),
-                              label: const Text('Cliente'),
+                              label: Text(l.rolCliente),
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -274,7 +277,7 @@ class _LoginPantallaState extends ConsumerState<LoginPantalla> {
                                   ? null
                                   : () => _entrarDemo('tendero@demo.com'),
                               icon: const Icon(Icons.storefront_outlined),
-                              label: const Text('Tendero'),
+                              label: Text(l.rolTendero),
                             ),
                           ),
                         ],
@@ -325,7 +328,7 @@ class _BotonGoogle extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 12),
-                const Text('Continuar con Google'),
+                Text(L.of(context).loginGoogle),
               ],
             ),
     );

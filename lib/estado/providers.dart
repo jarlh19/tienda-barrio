@@ -161,12 +161,6 @@ final cuentasFiadoProvider = FutureProvider<List<CuentaFiado>>(
 enum Periodo { hoy, semana, mes }
 
 extension PeriodoX on Periodo {
-  String get etiqueta => switch (this) {
-        Periodo.hoy => 'Hoy',
-        Periodo.semana => 'Últimos 7 días',
-        Periodo.mes => 'Este mes',
-      };
-
   /// Desde cuándo cuenta el periodo. El día arranca a las 00:00, no hace 24 h:
   /// el tendero cierra caja por día calendario, no por reloj.
   DateTime get desde {

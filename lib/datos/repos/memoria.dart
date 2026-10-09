@@ -606,7 +606,7 @@ class MemPedidosRepo implements PedidosRepo {
 
   Pedido _actualizar(String id, Pedido Function(Pedido) f) {
     final i = _a.pedidos.indexWhere((p) => p.id == id);
-    if (i < 0) throw ErrorApp('El pedido ya no existe.');
+    if (i < 0) throw ErrorApp('El pedido ya no existe.', aviso: Aviso.pedidoNoExiste);
     final actualizado = f(_a.pedidos[i]);
     _a.pedidos[i] = actualizado;
     _a.notificarPedidos();
@@ -616,7 +616,7 @@ class MemPedidosRepo implements PedidosRepo {
   @override
   Future<Pedido> cambiarEstado(String pedidoId, EstadoPedido estado) async {
     final antes = _a.pedidos.firstWhere((p) => p.id == pedidoId,
-        orElse: () => throw ErrorApp('El pedido ya no existe.'));
+        orElse: () => throw ErrorApp('El pedido ya no existe.', aviso: Aviso.pedidoNoExiste));
     final despues = _actualizar(pedidoId, (p) => p.copiar(estado: estado));
 
     // Al cancelar vuelve la mercadería y se descuenta lo que se había contado
@@ -684,7 +684,7 @@ class MemFiadoRepo implements FiadoRepo {
   Future<CuentaFiado> cuenta(String clienteId) async {
     final cliente = _a.perfiles.firstWhere(
       (p) => p.id == clienteId,
-      orElse: () => throw ErrorApp('Cliente no encontrado.'),
+      orElse: () => throw ErrorApp('Cliente no encontrado.', aviso: Aviso.clienteNoEncontrado),
     );
     return _armar(cliente);
   }
@@ -859,19 +859,26 @@ class MemInsumosRepo implements InsumosRepo {
     String nota = '',
   }) async {
     if (unidadesProducidas <= 0) {
-      throw ErrorApp('Indica cuántas unidades salieron.');
+      throw ErrorApp('Indica cuántas unidades salieron.', aviso: Aviso.indicaUnidades);
     }
 
     // Primero se comprueba que alcance todo: mejor no empezar que dejar el
     // inventario a medio descontar.
     for (final c in consumos) {
       final insumo = _a.insumos.where((i) => i.id == c.insumoId).firstOrNull;
-      if (insumo == null) throw ErrorApp('Ese insumo ya no existe.');
+      if (insumo == null) throw ErrorApp('Ese insumo ya no existe.', aviso: Aviso.insumoNoExiste);
       if (c.cantidad > insumo.stock) {
         throw ErrorApp(
           'No alcanza ${insumo.nombreCompleto}: '
           'quedan ${insumo.stock.toStringAsFixed(2)} ${insumo.unidad} '
           'y necesitas ${c.cantidad.toStringAsFixed(2)}.',
+          aviso: Aviso.insumoInsuficiente,
+          datos: {
+            'insumo': insumo.nombreCompleto,
+            'quedan': insumo.stock,
+            'unidad': insumo.unidad,
+            'necesitas': c.cantidad,
+          },
         );
       }
     }

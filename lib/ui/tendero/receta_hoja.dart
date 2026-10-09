@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/formato.dart';
 import '../../datos/modelos/modelos.dart';
 import '../../estado/providers.dart';
+import '../../l10n/app_localizations.dart';
 import '../comun/widgets.dart';
 
 Future<void> abrirEditorReceta(
@@ -84,7 +85,7 @@ class _EditorRecetaState extends ConsumerState<_EditorReceta> {
       if (!mounted) return;
       ref.invalidate(recetaProvider(widget.producto.id));
       Navigator.of(context).pop();
-      mostrarAviso(context, 'Receta guardada');
+      mostrarAviso(context, L.of(context).recetaGuardada);
     } catch (e) {
       if (mounted) mostrarError(context, e);
     } finally {
@@ -106,10 +107,13 @@ class _EditorRecetaState extends ConsumerState<_EditorReceta> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('Receta de ${p.nombre}', style: t.textTheme.titleLarge),
+            Text(L.of(context).recetaDe(p.nombre),
+                style: t.textTheme.titleLarge),
             Text(
-              'Cuánto se gasta para hacer '
-              '${p.seProduce ? '1 ${p.nombreLote} (${p.unidadesPorLote} ${p.unidad})' : 'un lote'}.',
+              L.of(context).recetaCuantoSeGasta(p.seProduce
+                  ? L.of(context).recetaLoteDe(p.nombreLote,
+                      Formato.cantidad(p.unidadesPorLote), p.unidad)
+                  : L.of(context).recetaUnLote),
               style: t.textTheme.bodySmall
                   ?.copyWith(color: t.colorScheme.onSurfaceVariant),
             ),
@@ -120,10 +124,10 @@ class _EditorRecetaState extends ConsumerState<_EditorReceta> {
                 child: Center(child: CircularProgressIndicator()),
               )
             else if (insumos.valueOrNull?.isEmpty ?? true)
-              const EstadoVacio(
+              EstadoVacio(
                 icono: Icons.grain,
-                titulo: 'No hay insumos registrados',
-                detalle: 'Agrégalos primero en Inventario → Insumos.',
+                titulo: L.of(context).sinInsumosTitulo,
+                detalle: L.of(context).sinInsumosDetalle,
               )
             else
               Builder(builder: (_) {
@@ -170,7 +174,7 @@ class _EditorRecetaState extends ConsumerState<_EditorReceta> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('Costo del lote'),
+                        Text(L.of(context).costoDelLote),
                         Text(
                           Formato.soles(costoLote),
                           style: const TextStyle(fontWeight: FontWeight.bold),
@@ -181,15 +185,16 @@ class _EditorRecetaState extends ConsumerState<_EditorReceta> {
                       Align(
                         alignment: Alignment.centerRight,
                         child: Text(
-                          '${Formato.soles(costoLote / p.unidadesPorLote)} '
-                          'por ${p.unidad}',
+                          L.of(context).costoPorUnidad(
+                              Formato.soles(costoLote / p.unidadesPorLote),
+                              p.unidad),
                           style: t.textTheme.bodySmall,
                         ),
                       ),
                     const SizedBox(height: 20),
                     FilledButton(
                       onPressed: _guardando ? null : () => _guardar(lista),
-                      child: const Text('Guardar receta'),
+                      child: Text(L.of(context).guardarReceta),
                     ),
                   ],
                 );

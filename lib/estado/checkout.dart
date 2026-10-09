@@ -20,13 +20,14 @@ class Checkout {
     String notas = '',
   }) async {
     final perfil = _ref.read(sesionProvider);
-    if (perfil == null) throw ErrorApp('Inicia sesión para pedir.');
+    if (perfil == null) throw ErrorApp('Inicia sesión para pedir.', aviso: Aviso.sesionRequerida);
 
     final items = _ref.read(carritoProvider);
-    if (items.isEmpty) throw ErrorApp('Tu carrito está vacío.');
+    if (items.isEmpty) throw ErrorApp('Tu carrito está vacío.', aviso: Aviso.carritoVacio);
 
     if (direccion.trim().isEmpty) {
-      throw ErrorApp('Indica a qué dirección llevamos el pedido.');
+      throw ErrorApp('Indica a qué dirección llevamos el pedido.',
+          aviso: Aviso.faltaDireccion);
     }
 
     final total = items.fold<double>(0, (s, i) => s + i.subtotal);
@@ -39,6 +40,11 @@ class Checkout {
           'Tu cupo de fiado no alcanza. Disponible: '
           'S/ ${cuenta.disponible.toStringAsFixed(2)} de S/ '
           '${cuenta.limite.toStringAsFixed(2)}.',
+          aviso: Aviso.cupoInsuficiente,
+          datos: {
+            'disponible': cuenta.disponible,
+            'limite': cuenta.limite,
+          },
         );
       }
     }

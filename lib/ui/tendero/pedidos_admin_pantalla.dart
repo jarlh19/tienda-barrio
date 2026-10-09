@@ -5,6 +5,8 @@ import '../../core/formato.dart';
 import '../../datos/modelos/modelos.dart';
 import '../../estado/providers.dart';
 import '../cliente/mis_pedidos_pantalla.dart';
+import '../../l10n/app_localizations.dart';
+import '../comun/etiquetas.dart';
 import '../comun/widgets.dart';
 
 class PedidosAdminPantalla extends ConsumerStatefulWidget {
@@ -29,17 +31,18 @@ class _PedidosAdminPantallaState extends ConsumerState<PedidosAdminPantalla> {
 
   @override
   Widget build(BuildContext context) {
+    final l = L.of(context);
     final pedidos = ref.watch(pedidosTiendaProvider);
     final repo = ref.read(pedidosRepoProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Pedidos'),
+        title: Text(l.navPedidos),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 8),
             child: FilterChip(
-              label: const Text('Solo activos'),
+              label: Text(l.pedidosSoloActivos),
               selected: _soloAbiertos,
               onSelected: (v) => setState(() => _soloAbiertos = v),
             ),
@@ -55,8 +58,8 @@ class _PedidosAdminPantallaState extends ConsumerState<PedidosAdminPantalla> {
           if (lista.isEmpty) {
             return EstadoVacio(
               icono: Icons.inbox_outlined,
-              titulo: _soloAbiertos ? 'No hay pedidos activos' : 'Aún no hay pedidos',
-              detalle: 'Los pedidos nuevos aparecen aquí al instante.',
+              titulo: _soloAbiertos ? l.sinPedidosActivos : l.sinPedidosAun,
+              detalle: l.sinPedidosAunDetalle,
             );
           }
           return ListView.builder(
@@ -128,9 +131,14 @@ class _Acciones extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Verifica ${Formato.soles(pedido.total)} por '
-                  '${pedido.metodoPago.etiqueta}'
-                  '${pedido.referenciaPago.isEmpty ? '' : ' · op. ${pedido.referenciaPago}'}',
+                  L.of(context).verificaPago(
+                    Formato.soles(pedido.total),
+                    pedido.metodoPago.texto(L.of(context)),
+                    pedido.referenciaPago.isEmpty
+                        ? ''
+                        : L.of(context)
+                            .operacionSufijo(pedido.referenciaPago),
+                  ),
                   style: TextStyle(
                     fontSize: 13,
                     color: Theme.of(context).colorScheme.onTertiaryContainer,
@@ -144,7 +152,7 @@ class _Acciones extends StatelessWidget {
                         onPressed: alConfirmarPago,
                         style: FilledButton.styleFrom(
                             minimumSize: const Size.fromHeight(36)),
-                        child: const Text('Pago recibido'),
+                        child: Text(L.of(context).pagoRecibido),
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -153,7 +161,7 @@ class _Acciones extends StatelessWidget {
                         onPressed: alRechazarPago,
                         style: OutlinedButton.styleFrom(
                             minimumSize: const Size.fromHeight(36)),
-                        child: const Text('No llegó'),
+                        child: Text(L.of(context).pagoNoLlego),
                       ),
                     ),
                   ],
@@ -171,7 +179,8 @@ class _Acciones extends StatelessWidget {
                   onPressed: alAvanzar,
                   style: FilledButton.styleFrom(
                       minimumSize: const Size.fromHeight(40)),
-                  child: Text('Marcar ${siguiente.etiqueta.toLowerCase()}'),
+                  child: Text(L.of(context)
+                      .marcarComo(siguiente.texto(L.of(context)).toLowerCase())),
                 ),
               ),
             if (siguiente != null && pedido.estado.abierto)
@@ -181,7 +190,7 @@ class _Acciones extends StatelessWidget {
                 onPressed: alCancelar,
                 style: OutlinedButton.styleFrom(
                     minimumSize: const Size(0, 40)),
-                child: const Text('Cancelar'),
+                child: Text(L.of(context).cancelar),
               ),
           ],
         ),

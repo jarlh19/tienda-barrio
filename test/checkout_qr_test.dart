@@ -1,12 +1,13 @@
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tienda_barrio/datos/modelos/modelos.dart';
 import 'package:tienda_barrio/datos/repos/repos.dart';
 import 'package:tienda_barrio/estado/providers.dart';
 import 'package:tienda_barrio/ui/cliente/checkout_pantalla.dart';
+
+import 'ayuda.dart';
 import 'package:tienda_barrio/ui/tendero/tienda_pantalla.dart' show VistaQr;
 
 /// PNG mínimo de 1x1: alcanza para comprobar que el QR se pinta.
@@ -39,7 +40,7 @@ Future<void> _abrirCheckout(WidgetTester tester, Tienda tienda) async {
       overrides: [
         tiendaRepoProvider.overrideWithValue(_TiendaFalsa(tienda)),
       ],
-      child: const MaterialApp(home: CheckoutPantalla()),
+      child: pantalla(const CheckoutPantalla()),
     ),
   );
   await tester.pumpAndSettle();

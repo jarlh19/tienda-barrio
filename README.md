@@ -77,12 +77,13 @@ lib/
   datos/
     modelos/   Producto, Pedido, CuentaFiado, ...
     repos/     interfaces + Supabase implementation + in-memory implementation
-  estado/      Riverpod providers, cart and checkout
+  estado/      Riverpod providers, cart, checkout and preferences
+  l10n/        app_es.arb, app_en.arb (the generated code lives here too)
   ui/
     auth/      sign-in and sign-up
     cliente/   catalog, cart, payment, my orders, my credit
     tendero/   orders, inventory, ingredients, recipes, scanner, cash, credit
-    comun/     profile and shared widgets
+    comun/     profile, shared widgets and domain labels
 supabase/schema.sql
 tool/icono.py
 ```
@@ -188,6 +189,30 @@ because it fails without saying why (ADR-0005).
 The button appears as soon as there is a client ID, in demo mode too. There it
 is simulated: it signs in as the sample customer without asking anyone for an
 account, which is all that can be done without a backend.
+
+## Language and appearance
+
+The app ships in **Spanish and English**, and in **light and dark**. Both
+follow the phone by default, and both can be overridden in **Profile**; the
+choice is remembered.
+
+Translations live in `lib/l10n/app_es.arb` and `app_en.arb`. Spanish is the
+template: it is the language the shop speaks and the one the code is written
+in, and it is what shows if a key is missing from a translation. The generated
+`app_localizations.dart` is produced by `flutter gen-l10n`, which `flutter pub
+get` runs on its own.
+
+Two rules keep this from leaking everywhere:
+
+- **Labels are not part of the domain.** `EstadoPedido.listo` means the same in
+  any language; "Ready for delivery" is just one way of saying it. The
+  `texto(L)` extensions live in `ui/comun/etiquetas.dart`.
+- **Errors travel as a key.** `ErrorApp` carries an `Aviso` and the screen
+  translates it. Text coming from the server has no `Aviso` and is shown as it
+  arrives — translating it would mean guessing.
+
+What is **not** translated is the shop's own data: products, categories and
+units stay in whatever language the shopkeeper typed them. See ADR-0006.
 
 ## Product record
 
@@ -343,6 +368,7 @@ Decisions that would be costly to reverse are in `docs/decisions/` (Spanish):
 | [0003](docs/decisions/0003-el-pedido-que-llega-del-celular-no-es-confiable.md) | The order coming from the phone is not trusted |
 | [0004](docs/decisions/0004-costo-promedio-ponderado-de-insumos.md) | Ingredient cost is a weighted average |
 | [0005](docs/decisions/0005-entrar-con-google-y-el-correo-de-respaldo.md) | Sign in with Google, with email as fallback |
+| [0006](docs/decisions/0006-el-idioma-y-el-tema-los-elige-quien-mira.md) | The reader picks the language and the theme |
 
 ## Known gaps
 

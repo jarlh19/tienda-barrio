@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/formato.dart';
 import '../../datos/modelos/modelos.dart';
 import '../../estado/providers.dart';
+import '../../l10n/app_localizations.dart';
+import '../comun/etiquetas.dart';
 import '../comun/widgets.dart';
 import 'movimiento_hoja.dart';
 
@@ -21,12 +23,12 @@ class CajaPantalla extends ConsumerWidget {
     final periodo = ref.watch(periodoCajaProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Caja')),
+      appBar: AppBar(title: Text(L.of(context).navCaja)),
       floatingActionButton: FloatingActionButton.extended(
         heroTag: 'fab-caja',
         onPressed: () => abrirHojaMovimiento(context, ref),
         icon: const Icon(Icons.add),
-        label: const Text('Registrar'),
+        label: Text(L.of(context).registrar),
       ),
       body: RefreshIndicator(
         onRefresh: () async {
@@ -46,7 +48,7 @@ class CajaPantalla extends ConsumerWidget {
                     Padding(
                       padding: const EdgeInsets.only(right: 8),
                       child: ChoiceChip(
-                        label: Text(p.etiqueta),
+                        label: Text(p.texto(L.of(context))),
                         selected: periodo == p,
                         onSelected: (_) =>
                             ref.read(periodoCajaProvider.notifier).state = p,
@@ -61,15 +63,16 @@ class CajaPantalla extends ConsumerWidget {
                 padding: EdgeInsets.symmetric(vertical: 48),
                 child: Center(child: CircularProgressIndicator()),
               ),
-              error: (e, _) => const EstadoVacio(
+              error: (e, _) => EstadoVacio(
                 icono: Icons.cloud_off_outlined,
-                titulo: 'No se pudo calcular la caja',
-                detalle: 'Revisa tu conexión e inténtalo otra vez.',
+                titulo: L.of(context).cajaNoCalculada,
+                detalle: L.of(context).errorDetalle,
               ),
               data: (r) => _Resumen(resumen: r),
             ),
             const SizedBox(height: 24),
-            Text('Movimientos', style: Theme.of(context).textTheme.titleSmall),
+            Text(L.of(context).movimientos,
+                style: Theme.of(context).textTheme.titleSmall),
             const SizedBox(height: 8),
             AsyncVista(
               valor: movimientos,
@@ -77,10 +80,10 @@ class CajaPantalla extends ConsumerWidget {
               constructor: (lista) {
                 final insumos = deInsumos.valueOrNull ?? const [];
                 if (lista.isEmpty && insumos.isEmpty) {
-                  return const EstadoVacio(
+                  return EstadoVacio(
                     icono: Icons.receipt_long_outlined,
-                    titulo: 'Sin movimientos en este periodo',
-                    detalle: 'Registra una producción o espera la primera venta.',
+                    titulo: L.of(context).sinMovimientosPeriodo,
+                    detalle: L.of(context).sinMovimientosPeriodoDetalle,
                   );
                 }
                 // Los dos kardex se muestran juntos y en orden: el tendero ve
@@ -118,7 +121,9 @@ class _Resumen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  resumen.enGanancia ? 'Te queda' : 'Vas perdiendo',
+                  resumen.enGanancia
+                      ? L.of(context).cajaTeQueda
+                      : L.of(context).cajaVasPerdiendo,
                   style: t.textTheme.labelLarge,
                 ),
                 const SizedBox(height: 4),
@@ -133,8 +138,9 @@ class _Resumen extends StatelessWidget {
                 ),
                 if (resumen.ingresos > 0)
                   Text(
-                    'Margen ${resumen.margen.toStringAsFixed(0)}% · '
-                    '${resumen.unidadesVendidas} unidades vendidas',
+                    L.of(context).cajaMargen(
+                        resumen.margen.toStringAsFixed(0),
+                        resumen.unidadesVendidas),
                     style: t.textTheme.bodySmall
                         ?.copyWith(color: t.colorScheme.onSurfaceVariant),
                   ),
@@ -142,8 +148,8 @@ class _Resumen extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.only(top: 8),
                     child: Text(
-                      'Se perdió ${Formato.soles(resumen.perdidas)} en merma. '
-                      'No sale de la caja —ya estaba pagado— pero no vuelve.',
+                      L.of(context)
+                          .cajaMerma(Formato.soles(resumen.perdidas)),
                       style: t.textTheme.bodySmall
                           ?.copyWith(color: t.colorScheme.error),
                     ),
@@ -157,7 +163,7 @@ class _Resumen extends StatelessWidget {
           children: [
             Expanded(
               child: _Tarjeta(
-                titulo: 'Entró',
+                titulo: L.of(context).cajaEntro,
                 monto: resumen.ingresos,
                 icono: Icons.arrow_downward,
                 color: t.colorScheme.primary,
@@ -166,7 +172,7 @@ class _Resumen extends StatelessWidget {
             const SizedBox(width: 12),
             Expanded(
               child: _Tarjeta(
-                titulo: 'Salió',
+                titulo: L.of(context).cajaSalio,
                 monto: resumen.egresos,
                 icono: Icons.arrow_upward,
                 color: t.colorScheme.error,
@@ -182,7 +188,7 @@ class _Resumen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Qué se vendió', style: t.textTheme.titleSmall),
+                  Text(L.of(context).cajaQueSeVendio, style: t.textTheme.titleSmall),
                   const SizedBox(height: 8),
                   for (final linea in resumen.porProducto)
                     Padding(
@@ -236,15 +242,15 @@ class _FilaInsumo extends StatelessWidget {
         child: Icon(icono, size: 18, color: color),
       ),
       title: Text(
-        '${movimiento.tipo.etiqueta} · ${movimiento.insumoNombre}',
+        '${movimiento.tipo.texto(L.of(context))} · ${movimiento.insumoNombre}',
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),
       subtitle: Text(
         '${movimiento.deltaStock > 0 ? '+' : ''}'
         '${Formato.cantidad(movimiento.deltaStock)}'
-        '${movimiento.presentaciones > 0 ? ' · ${Formato.cantidad(movimiento.presentaciones)} presentación(es)' : ''}'
-        ' · ${Formato.hace(movimiento.fecha)}',
+        '${movimiento.presentaciones > 0 ? L.of(context).movPresentaciones(Formato.cantidad(movimiento.presentaciones)) : ''}'
+        ' · ${Formato.hace(L.of(context), movimiento.fecha)}',
       ),
       trailing: movimiento.egreso <= 0
           ? null
@@ -333,14 +339,15 @@ class _FilaMovimiento extends StatelessWidget {
         child: Icon(icono, size: 18, color: color),
       ),
       title: Text(
-        '${movimiento.tipo.etiqueta} · ${movimiento.productoNombre}',
+        '${movimiento.tipo.texto(L.of(context))} · ${movimiento.productoNombre}',
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),
       subtitle: Text(
-        '${movimiento.deltaStock > 0 ? '+' : ''}${movimiento.deltaStock} und'
-        '${movimiento.lotes > 0 ? ' · ${Formato.cantidad(movimiento.lotes)} lote(s)' : ''}'
-        ' · ${Formato.hace(movimiento.fecha)}',
+        '${movimiento.deltaStock > 0 ? '+' : ''}'
+        '${L.of(context).movUnidades('${movimiento.deltaStock}')}'
+        '${movimiento.lotes > 0 ? L.of(context).movLotes(Formato.cantidad(movimiento.lotes)) : ''}'
+        ' · ${Formato.hace(L.of(context), movimiento.fecha)}',
       ),
       trailing: monto.isEmpty
           ? null

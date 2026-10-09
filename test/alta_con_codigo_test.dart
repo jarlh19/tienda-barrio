@@ -4,6 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:tienda_barrio/datos/repos/memoria.dart';
 import 'package:tienda_barrio/ui/tendero/inventario_pantalla.dart';
 
+import 'ayuda.dart';
+
 /// Lo que hace el escáner cuando lee un código que no está registrado:
 /// abrir el alta con ese código puesto, para que el tendero solo ponga
 /// nombre, precio y cantidad.
@@ -12,8 +14,8 @@ void main() {
       (tester) async {
     await tester.pumpWidget(
       ProviderScope(
-        child: MaterialApp(
-          home: Consumer(
+        child: pantalla(
+          Consumer(
             builder: (context, ref, _) => Scaffold(
               body: TextButton(
                 onPressed: () =>

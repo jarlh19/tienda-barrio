@@ -43,6 +43,7 @@ dependencies:
   cached_network_image: ^4.0.0
   mobile_scanner: ^7.4.0
   image_picker: ^1.2.3
+  shared_preferences: ^2.5.6
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -64,6 +65,9 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+
+  # Genera lib/l10n/app_localizations.dart desde los .arb al compilar.
+  generate: true
 
   # To add assets to your application, add an assets section, like this:
   # assets:

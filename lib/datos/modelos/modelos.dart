@@ -307,15 +307,6 @@ class ItemPedido {
 enum EstadoPedido { pendiente, confirmado, preparando, listo, entregado, cancelado }
 
 extension EstadoPedidoX on EstadoPedido {
-  String get etiqueta => switch (this) {
-        EstadoPedido.pendiente => 'Pendiente',
-        EstadoPedido.confirmado => 'Confirmado',
-        EstadoPedido.preparando => 'Preparando',
-        EstadoPedido.listo => 'Listo para entregar',
-        EstadoPedido.entregado => 'Entregado',
-        EstadoPedido.cancelado => 'Cancelado',
-      };
-
   /// Estado al que puede avanzar el tendero desde este. `null` = fin del flujo.
   EstadoPedido? get siguiente => switch (this) {
         EstadoPedido.pendiente => EstadoPedido.confirmado,
@@ -332,30 +323,12 @@ extension EstadoPedidoX on EstadoPedido {
 enum MetodoPago { efectivo, yape, plin, tarjeta, fiado }
 
 extension MetodoPagoX on MetodoPago {
-  String get etiqueta => switch (this) {
-        MetodoPago.efectivo => 'Efectivo al recibir',
-        MetodoPago.yape => 'Yape',
-        MetodoPago.plin => 'Plin',
-        MetodoPago.tarjeta => 'Tarjeta (pasarela)',
-        MetodoPago.fiado => 'Fiado (a la cuenta)',
-      };
-
   /// Métodos donde el cliente informa un código de operación que el tendero verifica.
   bool get requiereComprobante =>
       this == MetodoPago.yape || this == MetodoPago.plin;
 }
 
 enum EstadoPago { pendiente, verificando, pagado, fiado, fallido }
-
-extension EstadoPagoX on EstadoPago {
-  String get etiqueta => switch (this) {
-        EstadoPago.pendiente => 'Por pagar',
-        EstadoPago.verificando => 'Verificando pago',
-        EstadoPago.pagado => 'Pagado',
-        EstadoPago.fiado => 'Al fiado',
-        EstadoPago.fallido => 'Pago rechazado',
-      };
-}
 
 T _enumDesde<T extends Enum>(List<T> valores, String? v, T porDefecto) {
   for (final e in valores) {
@@ -603,15 +576,6 @@ enum TipoMovimientoInventario {
 }
 
 extension TipoMovimientoInventarioX on TipoMovimientoInventario {
-  String get etiqueta => switch (this) {
-        TipoMovimientoInventario.produccion => 'Producción',
-        TipoMovimientoInventario.compra => 'Compra',
-        TipoMovimientoInventario.venta => 'Venta',
-        TipoMovimientoInventario.merma => 'Merma',
-        TipoMovimientoInventario.ajuste => 'Ajuste',
-        TipoMovimientoInventario.devolucion => 'Devolución',
-      };
-
   /// Si suma o resta unidades al stock.
   bool get sumaStock =>
       this == TipoMovimientoInventario.produccion ||
@@ -986,13 +950,6 @@ enum TipoMovimientoInsumo {
 }
 
 extension TipoMovimientoInsumoX on TipoMovimientoInsumo {
-  String get etiqueta => switch (this) {
-        TipoMovimientoInsumo.compra => 'Compra',
-        TipoMovimientoInsumo.consumo => 'Consumo',
-        TipoMovimientoInsumo.merma => 'Merma',
-        TipoMovimientoInsumo.ajuste => 'Ajuste',
-      };
-
   bool get sumaStock =>
       this == TipoMovimientoInsumo.compra || this == TipoMovimientoInsumo.ajuste;
 }

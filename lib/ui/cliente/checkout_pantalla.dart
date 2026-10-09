@@ -7,6 +7,8 @@ import '../../datos/modelos/modelos.dart';
 import '../../estado/carrito.dart';
 import '../../estado/checkout.dart';
 import '../../estado/providers.dart';
+import '../../l10n/app_localizations.dart';
+import '../comun/etiquetas.dart';
 import '../comun/widgets.dart';
 import '../tendero/tienda_pantalla.dart' show VistaQr;
 
@@ -54,16 +56,19 @@ class _CheckoutPantallaState extends ConsumerState<CheckoutPantalla> {
         context: context,
         builder: (_) => AlertDialog(
           icon: const Icon(Icons.check_circle_outline, size: 40),
-          title: const Text('¡Pedido enviado!'),
+          title: Text(L.of(context).pedidoEnviadoTitulo),
           content: Text(
-            'Tu pedido ${pedido.codigo} por ${Formato.soles(pedido.total)} '
-            'llegó a la tienda.\n\n${pedido.estadoPago.etiqueta}.',
+            L.of(context).pedidoEnviadoDetalle(
+              pedido.codigo,
+              Formato.soles(pedido.total),
+              pedido.estadoPago.texto(L.of(context)),
+            ),
             textAlign: TextAlign.center,
           ),
           actions: [
             FilledButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Entendido'),
+              child: Text(L.of(context).entendido),
             ),
           ],
         ),
@@ -79,34 +84,35 @@ class _CheckoutPantallaState extends ConsumerState<CheckoutPantalla> {
   @override
   Widget build(BuildContext context) {
     final t = Theme.of(context);
+    final l = L.of(context);
     final items = ref.watch(carritoProvider);
     final total = ref.watch(totalCarritoProvider);
     final cuenta = ref.watch(miCuentaFiadoProvider).valueOrNull;
     final tienda = ref.watch(tiendaProvider).valueOrNull ?? const Tienda();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Pagar')),
+      appBar: AppBar(title: Text(l.pagarTitulo)),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
         children: [
           _Seccion(
-            titulo: 'Entrega',
+            titulo: l.checkoutEntrega,
             hijo: Column(
               children: [
                 TextField(
                   controller: _direccion,
-                  decoration: const InputDecoration(
-                    labelText: 'Dirección',
-                    prefixIcon: Icon(Icons.home_outlined),
+                  decoration: InputDecoration(
+                    labelText: l.campoDireccion,
+                    prefixIcon: const Icon(Icons.home_outlined),
                   ),
                 ),
                 const SizedBox(height: 12),
                 TextField(
                   controller: _notas,
                   maxLines: 2,
-                  decoration: const InputDecoration(
-                    labelText: 'Nota para la tienda (opcional)',
-                    hintText: 'Ej.: tocar el timbre 2 veces',
+                  decoration: InputDecoration(
+                    labelText: l.checkoutNota,
+                    hintText: l.checkoutNotaEjemplo,
                   ),
                 ),
               ],
@@ -114,7 +120,7 @@ class _CheckoutPantallaState extends ConsumerState<CheckoutPantalla> {
           ),
           const SizedBox(height: 16),
           _Seccion(
-            titulo: 'Forma de pago',
+            titulo: l.checkoutFormaPago,
             hijo: Column(
               children: [
                 RadioGroup<MetodoPago>(
@@ -126,7 +132,7 @@ class _CheckoutPantallaState extends ConsumerState<CheckoutPantalla> {
                         RadioListTile<MetodoPago>(
                           value: m,
                           contentPadding: EdgeInsets.zero,
-                          title: Text(m.etiqueta),
+                          title: Text(m.texto(l)),
                           subtitle: _subtituloMetodo(m, cuenta, total, tienda),
                           enabled: _habilitado(m, cuenta, total, tienda),
                         ),
@@ -147,7 +153,7 @@ class _CheckoutPantallaState extends ConsumerState<CheckoutPantalla> {
           ),
           const SizedBox(height: 16),
           _Seccion(
-            titulo: 'Resumen (${items.length} productos)',
+            titulo: l.resumenProductos(items.length),
             hijo: Column(
               children: [
                 for (final i in items)
@@ -184,7 +190,7 @@ class _CheckoutPantallaState extends ConsumerState<CheckoutPantalla> {
                     height: 22,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                : Text('Confirmar pedido · ${Formato.soles(total)}'),
+                : Text(l.confirmarPedido(Formato.soles(total))),
           ),
         ],
       ),
@@ -202,18 +208,19 @@ class _CheckoutPantallaState extends ConsumerState<CheckoutPantalla> {
 
   Widget? _subtituloMetodo(
       MetodoPago m, CuentaFiado? cuenta, double total, Tienda tienda) {
+    final l = L.of(context);
     if (m == MetodoPago.tarjeta) {
-      return const Text('Próximamente');
+      return Text(l.proximamente);
     }
     if (m.requiereComprobante && !tienda.aceptaPagoCon(m)) {
-      return const Text('La tienda aún no lo tiene configurado');
+      return Text(l.metodoNoConfigurado);
     }
     if (m == MetodoPago.fiado) {
-      if (cuenta == null) return const Text('Sin cuenta de fiado');
-      final texto = 'Disponible ${Formato.soles(cuenta.disponible)} '
-          'de ${Formato.soles(cuenta.limite)}';
+      if (cuenta == null) return Text(l.sinFiadoTitulo);
+      final texto = l.fiadoDisponibleDe(
+          Formato.soles(cuenta.disponible), Formato.soles(cuenta.limite));
       return Text(
-        cuenta.alcanzaPara(total) ? texto : '$texto — no alcanza para este pedido',
+        cuenta.alcanzaPara(total) ? texto : l.fiadoNoAlcanza(texto),
       );
     }
     return null;
@@ -275,7 +282,8 @@ class _DatosDeCobro extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            'Paga ${Formato.soles(total)} con ${metodo.etiqueta}',
+            L.of(context).pagaConMetodo(
+                Formato.soles(total), metodo.texto(L.of(context))),
             style: TextStyle(
               fontWeight: FontWeight.w600,
               color: t.colorScheme.onSecondaryContainer,
@@ -295,8 +303,7 @@ class _DatosDeCobro extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             Text(
-              'Escanea el QR desde tu app, o guarda la imagen si estás pagando '
-              'desde este mismo celular.',
+              L.of(context).qrInstrucciones,
               textAlign: TextAlign.center,
               style: t.textTheme.bodySmall
                   ?.copyWith(color: t.colorScheme.onSecondaryContainer),
@@ -321,7 +328,8 @@ class _DatosDeCobro extends StatelessWidget {
                 ),
                 BotonCopiar(
                   texto: numero,
-                  aviso: 'Número copiado. Pégalo en ${metodo.etiqueta}.',
+                  aviso: L.of(context)
+                      .numeroCopiado(metodo.texto(L.of(context))),
                   color: t.colorScheme.onSecondaryContainer,
                 ),
               ],
@@ -330,9 +338,9 @@ class _DatosDeCobro extends StatelessWidget {
           const SizedBox(height: 10),
           TextField(
             controller: referencia,
-            decoration: const InputDecoration(
-              labelText: 'Código de operación',
-              hintText: 'Ej.: 00123456',
+            decoration: InputDecoration(
+              labelText: L.of(context).codigoOperacion,
+              hintText: L.of(context).codigoOperacionEjemplo,
             ),
             keyboardType: TextInputType.number,
           ),

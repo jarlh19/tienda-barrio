@@ -3,12 +3,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../datos/modelos/modelos.dart';
-import '../../datos/repos/repos.dart';
+import '../../l10n/app_localizations.dart';
+import 'etiquetas.dart';
 
-/// Muestra un mensaje de error legible. Si viene de la app usamos su texto;
+/// Muestra un mensaje de error legible. Si viene de la app lo traducimos;
 /// cualquier otra cosa se resume para no filtrar detalles técnicos al cliente.
 void mostrarError(BuildContext context, Object error) {
-  final texto = error is ErrorApp ? error.mensaje : 'Algo salió mal. Inténtalo otra vez.';
+  final texto = textoDeError(L.of(context), error);
   ScaffoldMessenger.of(context)
     ..clearSnackBars()
     ..showSnackBar(SnackBar(
@@ -33,33 +34,35 @@ class BotonCopiar extends StatelessWidget {
   const BotonCopiar({
     super.key,
     required this.texto,
-    this.aviso = 'Copiado',
+    this.aviso,
     this.color,
   });
 
   final String texto;
-  final String aviso;
+
+  /// Qué decir al copiar. Sin esto, un "Copiado" a secas.
+  final String? aviso;
   final Color? color;
 
   @override
   Widget build(BuildContext context) {
+    final l = L.of(context);
     return IconButton(
       icon: const Icon(Icons.copy_rounded, size: 20),
-      tooltip: 'Copiar',
+      tooltip: l.copiar,
       color: color,
       visualDensity: VisualDensity.compact,
       onPressed: () async {
         try {
           await Clipboard.setData(ClipboardData(text: texto));
           if (!context.mounted) return;
-          mostrarAviso(context, aviso);
+          mostrarAviso(context, aviso ?? l.copiado);
         } catch (_) {
           // Hay navegadores que niegan el permiso de escribir el portapapeles.
           // El texto sigue siendo seleccionable a mano, así que se avisa: peor
           // que no copiar es tocar el botón y que no pase nada.
           if (!context.mounted) return;
-          mostrarAviso(context,
-              'No se pudo copiar. Mantén presionado el número para seleccionarlo.');
+          mostrarAviso(context, l.copiarFallo);
         }
       },
     );
@@ -85,13 +88,14 @@ class AsyncVista<T> extends StatelessWidget {
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, _) => EstadoVacio(
         icono: Icons.cloud_off_outlined,
-        titulo: 'No se pudo cargar',
-        detalle: e is ErrorApp ? e.mensaje : 'Revisa tu conexión e inténtalo otra vez.',
+        titulo: L.of(context).noSePudoCargar,
+        detalle: textoDeError(L.of(context), e,
+            generico: L.of(context).errorDetalle),
         accion: alReintentar == null
             ? null
             : FilledButton.tonal(
                 onPressed: alReintentar,
-                child: const Text('Reintentar'),
+                child: Text(L.of(context).reintentar),
               ),
       ),
       data: constructor,
@@ -168,7 +172,7 @@ class ChipEstado extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
-        estado.etiqueta,
+        estado.texto(L.of(context)),
         style: TextStyle(color: texto, fontSize: 12, fontWeight: FontWeight.w600),
       ),
     );
@@ -197,7 +201,7 @@ class ChipPago extends StatelessWidget {
         Icon(icono, size: 15, color: esquema.onSurfaceVariant),
         const SizedBox(width: 4),
         Text(
-          '${metodo.etiqueta} · ${estado.etiqueta}',
+          '${metodo.texto(L.of(context))} · ${estado.texto(L.of(context))}',
           style: TextStyle(fontSize: 12, color: esquema.onSurfaceVariant),
         ),
       ],
@@ -222,7 +226,7 @@ class AvisoDemo extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              'Modo demo: los datos son de ejemplo y no se guardan.',
+              L.of(context).modoDemoBanner,
               style: TextStyle(fontSize: 12, color: esquema.onTertiaryContainer),
             ),
           ),

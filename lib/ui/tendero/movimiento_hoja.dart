@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/config.dart';
 import '../../core/formato.dart';
 import '../../datos/modelos/modelos.dart';
 import '../../estado/providers.dart';
+import '../../l10n/app_localizations.dart';
+import '../comun/etiquetas.dart';
 import '../comun/widgets.dart';
 
 Future<void> abrirHojaMovimiento(
@@ -197,26 +200,27 @@ class _HojaMovimientoState extends ConsumerState<_HojaMovimiento> {
     setState(() {});
   }
 
-  String get _etiquetaMonto => switch (_tipo) {
-        TipoMovimientoInventario.venta => 'Cuánto cobraste',
-        TipoMovimientoInventario.merma => 'Cuánto perdiste',
-        _ => 'Cuánto te costó',
+  String _etiquetaMonto(L l) => switch (_tipo) {
+        TipoMovimientoInventario.venta => l.montoVenta,
+        TipoMovimientoInventario.merma => l.montoMerma,
+        _ => l.montoCosto,
       };
 
   Future<void> _guardar() async {
     final p = _producto;
     if (p == null) {
-      mostrarAviso(context, 'Elige el producto');
+      mostrarAviso(context, L.of(context).eligeProducto);
       return;
     }
     if (_unidades <= 0) {
-      mostrarAviso(context, 'Indica la cantidad');
+      mostrarAviso(context, L.of(context).indicaCantidad);
       return;
     }
     if (!_tipo.sumaStock && _unidades > p.stock) {
       mostrarAviso(
         context,
-        'Solo hay ${p.stock} en stock y estás sacando $_unidades.',
+        L.of(context).stockInsuficiente(
+            Formato.cantidad(p.stock), Formato.cantidad(_unidades)),
       );
       return;
     }
@@ -235,7 +239,7 @@ class _HojaMovimientoState extends ConsumerState<_HojaMovimiento> {
         if (!mounted) return;
         refrescarTodo(ref);
         Navigator.of(context).pop();
-        mostrarAviso(context, _resumenDe(resultado));
+        mostrarAviso(context, _resumenDe(L.of(context), resultado));
         return;
       }
 
@@ -256,7 +260,8 @@ class _HojaMovimientoState extends ConsumerState<_HojaMovimiento> {
       if (!mounted) return;
       refrescarTodo(ref);
       Navigator.of(context).pop();
-      mostrarAviso(context, '${_tipo.etiqueta} registrada');
+      mostrarAviso(context,
+          L.of(context).movimientoRegistrado(_tipo.texto(L.of(context))));
     } catch (e) {
       if (mounted) mostrarError(context, e);
     } finally {
@@ -265,18 +270,19 @@ class _HojaMovimientoState extends ConsumerState<_HojaMovimiento> {
   }
 
   /// Qué contarle al tendero cuando termina la horneada.
-  String _resumenDe(ResultadoProduccion r) {
+  String _resumenDe(L l, ResultadoProduccion r) {
     final costo = Formato.soles(r.costoUnitario);
     if (r.unidadesEsperadas <= 0 || r.diferencia == 0) {
-      return 'Producción registrada · $costo por unidad';
+      return l.produccionRegistrada(costo);
     }
     final signo = r.diferencia > 0 ? '+' : '';
-    return 'Registrada · $signo${r.diferencia} vs lo esperado · $costo c/u';
+    return l.produccionRegistradaDif('$signo${r.diferencia}', costo);
   }
 
   @override
   Widget build(BuildContext context) {
     final t = Theme.of(context);
+    final l = L.of(context);
     final productos = ref.watch(inventarioProvider).valueOrNull ?? const [];
     final p = _producto;
 
@@ -287,7 +293,7 @@ class _HojaMovimientoState extends ConsumerState<_HojaMovimiento> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('Registrar movimiento', style: t.textTheme.titleLarge),
+            Text(l.registrarMovimiento, style: t.textTheme.titleLarge),
             const SizedBox(height: 16),
             Wrap(
               spacing: 8,
@@ -295,8 +301,8 @@ class _HojaMovimientoState extends ConsumerState<_HojaMovimiento> {
                 for (final tipo in _tipos)
                   ChoiceChip(
                     label: Text(tipo == TipoMovimientoInventario.venta
-                        ? 'Venta en mostrador'
-                        : tipo.etiqueta),
+                        ? l.ventaMostrador
+                        : tipo.texto(l)),
                     selected: _tipo == tipo,
                     onSelected: (_) {
                       setState(() => _tipo = tipo);
@@ -310,13 +316,14 @@ class _HojaMovimientoState extends ConsumerState<_HojaMovimiento> {
             DropdownButtonFormField<String>(
               initialValue: p?.id,
               isExpanded: true,
-              decoration: const InputDecoration(labelText: 'Producto'),
+              decoration: InputDecoration(labelText: l.campoProducto),
               items: [
                 for (final prod in productos)
                   DropdownMenuItem(
                     value: prod.id,
                     child: Text(
-                      '${prod.nombreCompleto} · ${prod.stock} en stock',
+                      l.productoConStock(
+                          prod.nombreCompleto, Formato.cantidad(prod.stock)),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
@@ -337,9 +344,9 @@ class _HojaMovimientoState extends ConsumerState<_HojaMovimiento> {
                 segments: [
                   ButtonSegment(
                     value: true,
-                    label: Text('Por ${p.nombreLote}'),
+                    label: Text(l.porLote(p.nombreLote)),
                   ),
-                  const ButtonSegment(value: false, label: Text('Por unidad')),
+                  ButtonSegment(value: false, label: Text(l.porUnidad)),
                 ],
                 selected: {_porLotes},
                 onSelectionChanged: (s) {
@@ -354,10 +361,11 @@ class _HojaMovimientoState extends ConsumerState<_HojaMovimiento> {
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
               decoration: InputDecoration(
                 labelText: _usaLotes
-                    ? '¿Cuántas ${p!.nombreLote}s?'
-                    : 'Cantidad de unidades',
+                    ? l.cuantosLotes(p!.nombreLote)
+                    : l.cantidadUnidades,
                 helperText: _usaLotes && _unidades > 0
-                    ? '= $_unidades ${p!.unidad} en el inventario'
+                    ? l.igualAInventario(
+                        Formato.cantidad(_unidades), p!.unidad)
                     : null,
               ),
             ),
@@ -377,20 +385,19 @@ class _HojaMovimientoState extends ConsumerState<_HojaMovimiento> {
                     const TextInputType.numberWithOptions(decimal: true),
                 onChanged: (_) => setState(() => _montoEditado = true),
                 decoration: InputDecoration(
-                  labelText: _etiquetaMonto,
-                  prefixText: 'S/ ',
-                  helperText: _montoEditado
-                      ? 'Lo escribiste tú'
-                      : 'Calculado del producto; puedes corregirlo',
+                  labelText: _etiquetaMonto(l),
+                  prefixText: '${Config.simboloMoneda} ',
+                  helperText:
+                      _montoEditado ? l.montoEscrito : l.montoCalculado,
                 ),
               ),
             ],
             const SizedBox(height: 12),
             TextField(
               controller: _nota,
-              decoration: const InputDecoration(
-                labelText: 'Nota (opcional)',
-                hintText: 'Horneada de la mañana',
+              decoration: InputDecoration(
+                labelText: l.campoNota,
+                hintText: l.notaEjemplo,
               ),
             ),
             if (p != null && _unidades > 0) ...[
@@ -411,7 +418,7 @@ class _HojaMovimientoState extends ConsumerState<_HojaMovimiento> {
             const SizedBox(height: 20),
             FilledButton(
               onPressed: _guardando ? null : _guardar,
-              child: Text('Registrar ${_tipo.etiqueta.toLowerCase()}'),
+              child: Text(l.registrarTipo(_tipo.texto(l).toLowerCase())),
             ),
           ],
         ),
@@ -459,20 +466,21 @@ class _Vista extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Stock: ${producto.stock} → $quedan ${producto.unidad}',
+            L.of(context).stockQueda(Formato.cantidad(producto.stock),
+                Formato.cantidad(quedan), producto.unidad),
             style: const TextStyle(fontWeight: FontWeight.w600),
           ),
           if (monto > 0 && esCostoDeInsumos)
             Text(
-              'Costo del lote ${Formato.soles(monto)} · '
-              '${Formato.soles(monto / unidades)} por unidad',
+              L.of(context).costoLoteDetalle(Formato.soles(monto),
+                  Formato.soles(monto / unidades)),
               style: TextStyle(color: t.colorScheme.onSurfaceVariant),
             )
           else if (monto > 0)
             Text(
               esIngreso
-                  ? 'Entra ${Formato.soles(monto)} a la caja'
-                  : 'Sale ${Formato.soles(monto)} de la caja',
+                  ? L.of(context).entraACaja(Formato.soles(monto))
+                  : L.of(context).saleDeCaja(Formato.soles(monto)),
               style: TextStyle(
                 color: esIngreso ? t.colorScheme.primary : t.colorScheme.error,
               ),
@@ -480,8 +488,12 @@ class _Vista extends StatelessWidget {
           if (unidadesEsperadas > 0 && unidades != unidadesEsperadas)
             Text(
               unidades < unidadesEsperadas
-                  ? 'Rindió ${unidadesEsperadas - unidades} menos de lo esperado ($unidadesEsperadas)'
-                  : 'Rindió ${unidades - unidadesEsperadas} más de lo esperado ($unidadesEsperadas)',
+                  ? L.of(context).rindioMenos(
+                      Formato.cantidad(unidadesEsperadas - unidades),
+                      Formato.cantidad(unidadesEsperadas))
+                  : L.of(context).rindioMas(
+                      Formato.cantidad(unidades - unidadesEsperadas),
+                      Formato.cantidad(unidadesEsperadas)),
               style: TextStyle(
                 color: unidades < unidadesEsperadas
                     ? t.colorScheme.error
@@ -490,8 +502,8 @@ class _Vista extends StatelessWidget {
             ),
           if (esIngreso && producto.costo > 0)
             Text(
-              'Ganancia estimada '
-              '${Formato.soles(producto.margenUnitario * unidades)}',
+              L.of(context).gananciaEstimada(
+                  Formato.soles(producto.margenUnitario * unidades)),
               style: t.textTheme.bodySmall,
             ),
         ],
@@ -527,9 +539,9 @@ class _Receta extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Qué vas a gastar', style: t.textTheme.titleSmall),
+          Text(L.of(context).queVasAGastar, style: t.textTheme.titleSmall),
           Text(
-            'Sale de la receta; corrígelo si esta vez usaste más o menos.',
+            L.of(context).recetaCorrigelo,
             style: t.textTheme.bodySmall
                 ?.copyWith(color: t.colorScheme.onSurfaceVariant),
           ),
@@ -561,8 +573,12 @@ class _Receta extends StatelessWidget {
             ),
           const Divider(height: 20),
           Text(
-            'Costo de los insumos ${Formato.soles(costoTotal)}'
-            '${unidades > 0 ? ' · ${Formato.soles(costoTotal / unidades)} por unidad' : ''}',
+            L.of(context).costoInsumos(
+                Formato.soles(costoTotal),
+                unidades > 0
+                    ? L.of(context).porUnidadSufijo(
+                        Formato.soles(costoTotal / unidades))
+                    : ''),
             style: const TextStyle(fontWeight: FontWeight.w600),
           ),
         ],

@@ -33,11 +33,15 @@ Never _traducir(Object e) {
   if (e is ErrorApp) throw e;
   if (e is AuthException) throw ErrorApp(e.message);
   if (e is PostgrestException) {
-    throw ErrorApp(_esTecnico(e.message)
-        ? 'No se pudo completar la operación.'
-        : e.message);
+    if (_esTecnico(e.message)) {
+      throw ErrorApp('No se pudo completar la operación.',
+          aviso: Aviso.operacionFallida);
+    }
+    // Texto del servidor: se enseña tal cual, sin traducir.
+    throw ErrorApp(e.message);
   }
-  throw ErrorApp('No se pudo conectar con la tienda. Revisa tu internet.');
+  throw ErrorApp('No se pudo conectar con la tienda. Revisa tu internet.',
+      aviso: Aviso.sinConexion);
 }
 
 /// El texto de búsqueda entra en un filtro de PostgREST, donde la coma y el
@@ -70,7 +74,7 @@ class SbAuthRepo implements AuthRepo {
   Future<Perfil> _perfilDe(String id) async {
     final fila =
         await _c.from('perfiles').select().eq('id', id).maybeSingle();
-    if (fila == null) throw ErrorApp('Tu perfil aún no está creado.');
+    if (fila == null) throw ErrorApp('Tu perfil aún no está creado.', aviso: Aviso.perfilNoCreado);
     return Perfil.desdeJson(_fila(fila));
   }
 
@@ -81,7 +85,10 @@ class SbAuthRepo implements AuthRepo {
       final res = await _c.auth
           .signInWithPassword(email: email.trim(), password: clave);
       final id = res.user?.id;
-      if (id == null) throw ErrorApp('Correo o contraseña incorrectos.');
+      if (id == null) {
+        throw ErrorApp('Correo o contraseña incorrectos.',
+            aviso: Aviso.credencialesInvalidas);
+      }
       return _actual = await _perfilDe(id);
     } catch (e) {
       _traducir(e);
@@ -129,7 +136,8 @@ class SbAuthRepo implements AuthRepo {
       );
       final id = res.user?.id;
       if (id == null) {
-        throw ErrorApp('Revisa tu correo para confirmar la cuenta.');
+        throw ErrorApp('Revisa tu correo para confirmar la cuenta.',
+            aviso: Aviso.confirmaCorreo);
       }
       // El trigger `crear_perfil` inserta la fila; la leemos para tener el rol
       // real (nunca confiamos en el metadata del cliente para permisos).
@@ -383,7 +391,7 @@ class SbFiadoRepo implements FiadoRepo {
           .select()
           .eq('id', clienteId)
           .maybeSingle();
-      if (perfil == null) throw ErrorApp('Cliente no encontrado.');
+      if (perfil == null) throw ErrorApp('Cliente no encontrado.', aviso: Aviso.clienteNoEncontrado);
       return _armar(_fila(perfil), await _movimientosDe(clienteId));
     } catch (e) {
       _traducir(e);

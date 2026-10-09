@@ -5,6 +5,8 @@ import '../../core/formato.dart';
 import '../../datos/modelos/modelos.dart';
 import '../../estado/providers.dart';
 import '../cliente/mi_fiado_pantalla.dart';
+import '../../core/config.dart';
+import '../../l10n/app_localizations.dart';
 import '../comun/widgets.dart';
 
 class FiadoAdminPantalla extends ConsumerWidget {
@@ -15,7 +17,7 @@ class FiadoAdminPantalla extends ConsumerWidget {
     final cuentas = ref.watch(cuentasFiadoProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Fiado')),
+      appBar: AppBar(title: Text(L.of(context).navFiado)),
       body: RefreshIndicator(
         onRefresh: () async => ref.invalidate(cuentasFiadoProvider),
         child: AsyncVista(
@@ -23,10 +25,10 @@ class FiadoAdminPantalla extends ConsumerWidget {
           alReintentar: () => ref.invalidate(cuentasFiadoProvider),
           constructor: (lista) {
             if (lista.isEmpty) {
-              return const EstadoVacio(
+              return EstadoVacio(
                 icono: Icons.people_outline,
-                titulo: 'Sin clientes registrados',
-                detalle: 'Cuando alguien cree su cuenta aparecerá aquí.',
+                titulo: L.of(context).sinClientes,
+                detalle: L.of(context).sinClientesDetalle,
               );
             }
             final total = lista.fold<double>(0, (s, c) => s + c.saldo);
@@ -40,7 +42,7 @@ class FiadoAdminPantalla extends ConsumerWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Te deben en total',
+                        Text(L.of(context).teDebenEnTotal,
                             style: Theme.of(context).textTheme.labelLarge),
                         const SizedBox(height: 4),
                         Text(
@@ -51,7 +53,7 @@ class FiadoAdminPantalla extends ConsumerWidget {
                               ?.copyWith(fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 4),
-                        Text('$deudores cliente(s) con saldo pendiente'),
+                        Text(L.of(context).clientesConSaldo(deudores)),
                       ],
                     ),
                   ),
@@ -69,8 +71,9 @@ class FiadoAdminPantalla extends ConsumerWidget {
                       ),
                       title: Text(c.clienteNombre),
                       subtitle: Text(
-                        'Cupo ${Formato.soles(c.limite)} · '
-                        'disponible ${Formato.soles(c.disponible)}',
+                        L.of(context).cupoYDisponible(
+                            Formato.soles(c.limite),
+                            Formato.soles(c.disponible)),
                       ),
                       trailing: Text(
                         Formato.soles(c.saldo),
@@ -132,7 +135,7 @@ class _DetalleCuenta extends ConsumerWidget {
                 onPressed: () =>
                     _registrar(context, ref, cuenta, TipoMovimiento.abono),
                 icon: const Icon(Icons.payments_outlined),
-                label: const Text('Abono'),
+                label: Text(L.of(context).abono),
               ),
             ),
             const SizedBox(width: 12),
@@ -143,7 +146,7 @@ class _DetalleCuenta extends ConsumerWidget {
                 style: OutlinedButton.styleFrom(
                     minimumSize: const Size.fromHeight(50)),
                 icon: const Icon(Icons.add_shopping_cart),
-                label: const Text('Cargo'),
+                label: Text(L.of(context).cargo),
               ),
             ),
           ],
@@ -151,14 +154,16 @@ class _DetalleCuenta extends ConsumerWidget {
         TextButton.icon(
           onPressed: () => _cambiarLimite(context, ref, cuenta),
           icon: const Icon(Icons.tune),
-          label: const Text('Cambiar cupo'),
+          label: Text(L.of(context).cambiarCupo),
         ),
         const Divider(height: 24),
-        Text('Movimientos', style: Theme.of(context).textTheme.titleSmall),
+        Text(L.of(context).movimientos,
+            style: Theme.of(context).textTheme.titleSmall),
         if (cuenta.movimientos.isEmpty)
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 24),
-            child: Text('Sin movimientos.', textAlign: TextAlign.center),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 24),
+            child: Text(L.of(context).sinMovimientosPunto,
+                textAlign: TextAlign.center),
           ),
         for (final m in cuenta.movimientos) FilaMovimiento(movimiento: m),
       ],
@@ -179,7 +184,9 @@ Future<void> _registrar(
   final confirmado = await showDialog<bool>(
     context: context,
     builder: (_) => AlertDialog(
-      title: Text(esAbono ? 'Registrar abono' : 'Registrar consumo'),
+      title: Text(esAbono
+          ? L.of(context).registrarAbono
+          : L.of(context).registrarConsumo),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -187,15 +194,18 @@ Future<void> _registrar(
             controller: monto,
             autofocus: true,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            decoration: const InputDecoration(
-                labelText: 'Monto', prefixText: 'S/ '),
+            decoration: InputDecoration(
+                labelText: L.of(context).campoMonto,
+                prefixText: '${Config.simboloMoneda} '),
           ),
           const SizedBox(height: 12),
           TextField(
             controller: detalle,
             decoration: InputDecoration(
-              labelText: 'Detalle',
-              hintText: esAbono ? 'Pagó en efectivo' : 'Compra del día',
+              labelText: L.of(context).campoDetalle,
+              hintText: esAbono
+                  ? L.of(context).detalleAbonoEjemplo
+                  : L.of(context).detalleCargoEjemplo,
             ),
           ),
         ],
@@ -203,11 +213,11 @@ Future<void> _registrar(
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(false),
-          child: const Text('Cancelar'),
+          child: Text(L.of(context).cancelar),
         ),
         FilledButton(
           onPressed: () => Navigator.of(context).pop(true),
-          child: const Text('Guardar'),
+          child: Text(L.of(context).guardar),
         ),
       ],
     ),
@@ -216,7 +226,7 @@ Future<void> _registrar(
   if (confirmado != true) return;
   final valor = double.tryParse(monto.text.replaceAll(',', '.'));
   if (valor == null || valor <= 0) {
-    if (context.mounted) mostrarAviso(context, 'Monto inválido');
+    if (context.mounted) mostrarAviso(context, L.of(context).montoInvalido);
     return;
   }
 
@@ -235,7 +245,11 @@ Future<void> _registrar(
     ref.invalidate(cuentasFiadoProvider);
     ref.invalidate(miCuentaFiadoProvider);
     Navigator.of(context).pop(); // cierra la hoja para recargar con datos nuevos
-    mostrarAviso(context, esAbono ? 'Abono registrado' : 'Consumo registrado');
+    mostrarAviso(
+        context,
+        esAbono
+            ? L.of(context).abonoRegistrado
+            : L.of(context).consumoRegistrado);
   } catch (e) {
     if (context.mounted) mostrarError(context, e);
   }
@@ -251,22 +265,23 @@ Future<void> _cambiarLimite(
   final confirmado = await showDialog<bool>(
     context: context,
     builder: (_) => AlertDialog(
-      title: const Text('Cupo de fiado'),
+      title: Text(L.of(context).cupoDeFiado),
       content: TextField(
         controller: ctrl,
         autofocus: true,
         keyboardType: TextInputType.number,
-        decoration:
-            const InputDecoration(labelText: 'Máximo', prefixText: 'S/ '),
+        decoration: InputDecoration(
+            labelText: L.of(context).campoMaximo,
+            prefixText: '${Config.simboloMoneda} '),
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(false),
-          child: const Text('Cancelar'),
+          child: Text(L.of(context).cancelar),
         ),
         FilledButton(
           onPressed: () => Navigator.of(context).pop(true),
-          child: const Text('Guardar'),
+          child: Text(L.of(context).guardar),
         ),
       ],
     ),
@@ -274,7 +289,7 @@ Future<void> _cambiarLimite(
   if (confirmado != true) return;
   final valor = double.tryParse(ctrl.text.replaceAll(',', '.'));
   if (valor == null || valor < 0) {
-    if (context.mounted) mostrarAviso(context, 'Monto inválido');
+    if (context.mounted) mostrarAviso(context, L.of(context).montoInvalido);
     return;
   }
   try {
@@ -283,7 +298,7 @@ Future<void> _cambiarLimite(
     ref.invalidate(cuentasFiadoProvider);
     ref.invalidate(miCuentaFiadoProvider);
     Navigator.of(context).pop();
-    mostrarAviso(context, 'Cupo actualizado');
+    mostrarAviso(context, L.of(context).cupoActualizado);
   } catch (e) {
     if (context.mounted) mostrarError(context, e);
   }

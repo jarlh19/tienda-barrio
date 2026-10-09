@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/formato.dart';
 import '../../datos/modelos/modelos.dart';
 import '../../estado/providers.dart';
+import '../../l10n/app_localizations.dart';
 import '../comun/widgets.dart';
 
 class MisPedidosPantalla extends ConsumerWidget {
@@ -14,7 +15,7 @@ class MisPedidosPantalla extends ConsumerWidget {
     final pedidos = ref.watch(misPedidosProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Mis pedidos')),
+      appBar: AppBar(title: Text(L.of(context).misPedidosTitulo)),
       body: RefreshIndicator(
         onRefresh: () async => ref.invalidate(misPedidosProvider),
         child: AsyncVista(
@@ -22,10 +23,10 @@ class MisPedidosPantalla extends ConsumerWidget {
           alReintentar: () => ref.invalidate(misPedidosProvider),
           constructor: (lista) {
             if (lista.isEmpty) {
-              return const EstadoVacio(
+              return EstadoVacio(
                 icono: Icons.receipt_long_outlined,
-                titulo: 'Todavía no has pedido nada',
-                detalle: 'Cuando hagas tu primer pedido lo verás aquí.',
+                titulo: L.of(context).sinPedidosTitulo,
+                detalle: L.of(context).sinPedidosDetalle,
               );
             }
             return ListView.builder(
@@ -59,6 +60,7 @@ class TarjetaPedido extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = Theme.of(context);
+    final l = L.of(context);
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -69,7 +71,9 @@ class TarjetaPedido extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    mostrarCliente ? pedido.clienteNombre : 'Pedido ${pedido.codigo}',
+                    mostrarCliente
+                        ? pedido.clienteNombre
+                        : l.pedidoNumero(pedido.codigo),
                     style: t.textTheme.titleSmall
                         ?.copyWith(fontWeight: FontWeight.w700),
                   ),
@@ -80,8 +84,8 @@ class TarjetaPedido extends StatelessWidget {
             const SizedBox(height: 2),
             Text(
               mostrarCliente
-                  ? '${pedido.codigo} · ${Formato.hace(pedido.creadoEn)}'
-                  : Formato.fechaHora(pedido.creadoEn),
+                  ? '${pedido.codigo} · ${Formato.hace(l, pedido.creadoEn)}'
+                  : Formato.fechaHora(l, pedido.creadoEn),
               style: t.textTheme.bodySmall
                   ?.copyWith(color: t.colorScheme.onSurfaceVariant),
             ),
@@ -117,7 +121,7 @@ class TarjetaPedido extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(top: 4),
                 child: Text(
-                  'Operación ${pedido.referenciaPago}',
+                  l.operacionNumero(pedido.referenciaPago),
                   style: t.textTheme.bodySmall
                       ?.copyWith(color: t.colorScheme.onSurfaceVariant),
                 ),

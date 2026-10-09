@@ -1,0 +1,954 @@
+{
+  "@@locale": "es",
+  "abono": "Abono",
+  "abonoRegistrado": "Abono registrado",
+  "agregar": "Agregar",
+  "agregarInsumo": "Agregar insumo",
+  "agregarSinCodigo": "Agregar sin código",
+  "apariencia": "Apariencia",
+  "avisarmeCuandoBajeDe": "Avisarme cuando baje de",
+  "avisoCarritoVacio": "Tu carrito está vacío.",
+  "avisoClienteNoEncontrado": "Cliente no encontrado.",
+  "avisoConfirmaCorreo": "Revisa tu correo para confirmar la cuenta.",
+  "avisoCredencialesInvalidas": "Correo o contraseña incorrectos.",
+  "avisoCupoInsuficiente": "Tu cupo de fiado no alcanza. Disponible: {disponible} de {limite}.",
+  "@avisoCupoInsuficiente": {
+    "placeholders": {
+      "disponible": {
+        "type": "String"
+      },
+      "limite": {
+        "type": "String"
+      }
+    }
+  },
+  "avisoFaltaCodigoOperacion": "Ingresa el código de operación de tu {metodo}.",
+  "@avisoFaltaCodigoOperacion": {
+    "placeholders": {
+      "metodo": {
+        "type": "String"
+      }
+    }
+  },
+  "avisoFaltaDireccion": "Indica a qué dirección llevamos el pedido.",
+  "avisoIndicaUnidades": "Indica cuántas unidades salieron.",
+  "avisoInsumoInsuficiente": "No alcanza {insumo}: quedan {quedan} {unidad} y necesitas {necesitas}.",
+  "@avisoInsumoInsuficiente": {
+    "placeholders": {
+      "insumo": {
+        "type": "String"
+      },
+      "quedan": {
+        "type": "String"
+      },
+      "unidad": {
+        "type": "String"
+      },
+      "necesitas": {
+        "type": "String"
+      }
+    }
+  },
+  "avisoInsumoNoExiste": "Ese insumo ya no existe.",
+  "avisoOperacionFallida": "No se pudo completar la operación.",
+  "avisoPedidoNoExiste": "El pedido ya no existe.",
+  "avisoPerfilNoCreado": "Tu perfil aún no está creado.",
+  "avisoSesionRequerida": "Inicia sesión para pedir.",
+  "avisoSinConexion": "No se pudo conectar con la tienda. Revisa tu internet.",
+  "avisoTarjetaNoHabilitada": "El pago con tarjeta aún no está habilitado. Usa Yape, Plin, efectivo o fiado.",
+  "cajaEntro": "Entró",
+  "cajaMargen": "Margen {margen}% · {unidades} unidades vendidas",
+  "@cajaMargen": {
+    "placeholders": {
+      "margen": {
+        "type": "String"
+      },
+      "unidades": {
+        "type": "int"
+      }
+    }
+  },
+  "cajaMerma": "Se perdió {monto} en merma. No sale de la caja —ya estaba pagado— pero no vuelve.",
+  "@cajaMerma": {
+    "placeholders": {
+      "monto": {
+        "type": "String"
+      }
+    }
+  },
+  "cajaNoCalculada": "No se pudo calcular la caja",
+  "cajaQueSeVendio": "Qué se vendió",
+  "cajaSalio": "Salió",
+  "cajaTeQueda": "Te queda",
+  "cajaVasPerdiendo": "Vas perdiendo",
+  "camaraNoAbre": "No se pudo abrir la cámara.",
+  "camaraNoSoportada": "Este dispositivo no puede escanear códigos.",
+  "camaraSinPermiso": "La app necesita permiso de cámara para leer códigos.",
+  "cambiar": "Cambiar",
+  "cambiarCamara": "Cambiar cámara",
+  "cambiarCupo": "Cambiar cupo",
+  "campoCategoria": "Categoría",
+  "campoCelular": "Celular",
+  "campoClave": "Contraseña",
+  "campoCorreo": "Correo",
+  "campoCosto": "Costo",
+  "campoDetalle": "Detalle",
+  "campoDireccion": "Dirección",
+  "campoDireccionEntrega": "Dirección de entrega",
+  "campoFotoUrl": "URL de la foto (opcional)",
+  "campoMarca": "Marca",
+  "campoMaximo": "Máximo",
+  "campoMeCuesta": "Me cuesta",
+  "campoMedida": "Medida",
+  "campoMonto": "Monto",
+  "campoNombre": "Nombre",
+  "campoNota": "Nota (opcional)",
+  "campoNumero": "Número",
+  "campoPesoVolumen": "Peso o volumen",
+  "campoPrecio": "Precio",
+  "campoProducto": "Producto",
+  "campoStock": "Stock",
+  "campoTengoAhora": "Tengo ahora",
+  "campoTrae": "Trae",
+  "campoTraeEjemplo": "Ej.: 50",
+  "campoUnidad": "Unidad",
+  "cancelar": "Cancelar",
+  "cantidadInvalida": "Cantidad inválida",
+  "cantidadUnidades": "Cantidad de unidades",
+  "cargo": "Cargo",
+  "carritoTitulo": "Mi pedido",
+  "carritoVaciado": "Carrito vaciado",
+  "carritoVacioDetalle": "Agrega productos del catálogo para hacer tu pedido.",
+  "carritoVacioTitulo": "Tu carrito está vacío",
+  "catalogoBuscar": "¿Qué necesitas hoy?",
+  "catalogoSinResultados": "Sin resultados",
+  "catalogoSinResultadosDetalle": "Prueba con otro nombre o cambia de categoría.",
+  "cerrarSesion": "Cerrar sesión",
+  "checkoutEntrega": "Entrega",
+  "checkoutFormaPago": "Forma de pago",
+  "checkoutNota": "Nota para la tienda (opcional)",
+  "checkoutNotaEjemplo": "Ej.: tocar el timbre 2 veces",
+  "clientesConSaldo": "{n} cliente(s) con saldo pendiente",
+  "@clientesConSaldo": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "codigoBarrasVacio": "Déjalo vacío si se vende suelto",
+  "codigoOperacion": "Código de operación",
+  "codigoOperacionEjemplo": "Ej.: 00123456",
+  "codigoYaEsDe": "Ese código ya es de \"{nombre}\".",
+  "@codigoYaEsDe": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      }
+    }
+  },
+  "comoMePagan": "Cómo me pagan",
+  "comoMePaganDetalle": "Número y QR de Yape / Plin",
+  "compraRegistrada": "Compra registrada",
+  "comprarInsumo": "Comprar {insumo}",
+  "@comprarInsumo": {
+    "placeholders": {
+      "insumo": {
+        "type": "String"
+      }
+    }
+  },
+  "confirmarPedido": "Confirmar pedido · {total}",
+  "@confirmarPedido": {
+    "placeholders": {
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "consumoRegistrado": "Consumo registrado",
+  "continuarPago": "Continuar con el pago",
+  "copiado": "Copiado",
+  "copiar": "Copiar",
+  "copiarFallo": "No se pudo copiar. Mantén presionado el número para seleccionarlo.",
+  "costoDelLote": "Costo del lote",
+  "costoHelper": "Lo que te cuesta",
+  "costoInsumos": "Costo de los insumos {total}{porUnidad}",
+  "@costoInsumos": {
+    "placeholders": {
+      "total": {
+        "type": "String"
+      },
+      "porUnidad": {
+        "type": "String"
+      }
+    }
+  },
+  "costoInvalido": "Costo inválido",
+  "costoLoteDetalle": "Costo del lote {total} · {unitario} por unidad",
+  "@costoLoteDetalle": {
+    "placeholders": {
+      "total": {
+        "type": "String"
+      },
+      "unitario": {
+        "type": "String"
+      }
+    }
+  },
+  "costoPorUnidad": "{monto} por {unidad}",
+  "@costoPorUnidad": {
+    "placeholders": {
+      "monto": {
+        "type": "String"
+      },
+      "unidad": {
+        "type": "String"
+      }
+    }
+  },
+  "costoPorUnidadInsumo": "{costo} por {unidad}{presentacion}",
+  "@costoPorUnidadInsumo": {
+    "placeholders": {
+      "costo": {
+        "type": "String"
+      },
+      "unidad": {
+        "type": "String"
+      },
+      "presentacion": {
+        "type": "String"
+      }
+    }
+  },
+  "costoUnitarioPasaDe": "El {unidad} pasa de {antes} a {despues}",
+  "@costoUnitarioPasaDe": {
+    "placeholders": {
+      "unidad": {
+        "type": "String"
+      },
+      "antes": {
+        "type": "String"
+      },
+      "despues": {
+        "type": "String"
+      }
+    }
+  },
+  "cuantasPresentaciones": "¿Cuántos {nombre}s?",
+  "@cuantasPresentaciones": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      }
+    }
+  },
+  "cuantasUnidades": "¿Cuántos {unidad}?",
+  "@cuantasUnidades": {
+    "placeholders": {
+      "unidad": {
+        "type": "String"
+      }
+    }
+  },
+  "cuantoPagasteTotal": "Cuánto pagaste en total",
+  "cuantosLotes": "¿Cuántas {lote}s?",
+  "@cuantosLotes": {
+    "placeholders": {
+      "lote": {
+        "type": "String"
+      }
+    }
+  },
+  "cupoActualizado": "Cupo actualizado",
+  "cupoDeFiado": "Cupo de fiado",
+  "cupoYDisponible": "Cupo {limite} · disponible {disponible}",
+  "@cupoYDisponible": {
+    "placeholders": {
+      "limite": {
+        "type": "String"
+      },
+      "disponible": {
+        "type": "String"
+      }
+    }
+  },
+  "darDeBaja": "Dar de baja",
+  "darDeBajaDetalle": "El producto deja de aparecer en el catálogo, pero se mantiene en los pedidos anteriores.",
+  "darDeBajaPregunta": "¿Dar de baja?",
+  "detalleAbonoEjemplo": "Pagó en efectivo",
+  "detalleCargoEjemplo": "Compra del día",
+  "editarInsumo": "Editar insumo",
+  "editarProducto": "Editar producto",
+  "eligeProducto": "Elige el producto",
+  "enStock": "en stock",
+  "entendido": "Entendido",
+  "entraACaja": "Entra {monto} a la caja",
+  "errorDetalle": "Revisa tu conexión e inténtalo otra vez.",
+  "errorGenerico": "Algo salió mal. Inténtalo otra vez.",
+  "escanear": "Escanear",
+  "escanearAMano": "Escribirlo a mano",
+  "escanearCodigoBarras": "Código de barras",
+  "escanearEscribirCodigo": "Escribir el código",
+  "escanearInstruccion": "Apunta al código de barras del envase",
+  "escanearTitulo": "Escanear producto",
+  "estadoPagoFallido": "Pago rechazado",
+  "estadoPagoFiado": "Al fiado",
+  "estadoPagoPagado": "Pagado",
+  "estadoPagoPendiente": "Por pagar",
+  "estadoPagoVerificando": "Verificando pago",
+  "estadoPedidoCancelado": "Cancelado",
+  "estadoPedidoConfirmado": "Confirmado",
+  "estadoPedidoEntregado": "Entregado",
+  "estadoPedidoListo": "Listo para entregar",
+  "estadoPedidoPendiente": "Pendiente",
+  "estadoPedidoPreparando": "Preparando",
+  "fiadoAbono": "Abono",
+  "fiadoConsumo": "Consumo",
+  "fiadoCupoDisponible": "Cupo disponible {disponible} de {limite}",
+  "@fiadoCupoDisponible": {
+    "placeholders": {
+      "disponible": {
+        "type": "String"
+      },
+      "limite": {
+        "type": "String"
+      }
+    }
+  },
+  "fiadoDebes": "Debes",
+  "fiadoDisponibleDe": "Disponible {disponible} de {limite}",
+  "@fiadoDisponibleDe": {
+    "placeholders": {
+      "disponible": {
+        "type": "String"
+      },
+      "limite": {
+        "type": "String"
+      }
+    }
+  },
+  "fiadoNoAlcanza": "{texto} — no alcanza para este pedido",
+  "@fiadoNoAlcanza": {
+    "placeholders": {
+      "texto": {
+        "type": "String"
+      }
+    }
+  },
+  "filtroTodo": "Todo",
+  "gananciaEstimada": "Ganancia estimada {monto}",
+  "@gananciaEstimada": {
+    "placeholders": {
+      "monto": {
+        "type": "String"
+      }
+    }
+  },
+  "guardar": "Guardar",
+  "guardarCambios": "Guardar cambios",
+  "guardarNumeros": "Guardar números",
+  "guardarReceta": "Guardar receta",
+  "haceAhora": "ahora",
+  "haceAyer": "ayer",
+  "haceDias": "hace {n} días",
+  "@haceDias": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "haceHoras": "hace {n} h",
+  "@haceHoras": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "haceMinutos": "hace {n} min",
+  "@haceMinutos": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "idioma": "Idioma",
+  "idiomaAutomatico": "Según el celular",
+  "idiomaEspanol": "Español",
+  "idiomaIngles": "Inglés",
+  "igualAInventario": "= {unidades} {unidad} en el inventario",
+  "@igualAInventario": {
+    "placeholders": {
+      "unidades": {
+        "type": "String"
+      },
+      "unidad": {
+        "type": "String"
+      }
+    }
+  },
+  "igualAUnidadBase": "= {cantidad} {unidad}",
+  "@igualAUnidadBase": {
+    "placeholders": {
+      "cantidad": {
+        "type": "String"
+      },
+      "unidad": {
+        "type": "String"
+      }
+    }
+  },
+  "indicaCantidad": "Indica la cantidad",
+  "indicaCuantoEntro": "Indica cuánto entró",
+  "insumoActualizado": "Insumo actualizado",
+  "insumoAgregado": "Insumo agregado",
+  "insumoNombreEjemplo": "Harina",
+  "insumosPorAcabarse": "{n} insumo(s) por acabarse",
+  "@insumosPorAcabarse": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "inventarioVacio": "Inventario vacío",
+  "inventarioVacioDetalle": "Agrega tu primer producto con el botón de abajo.",
+  "linterna": "Linterna",
+  "loginCrearCuenta": "Crear cuenta",
+  "loginDemo": "Modo demo — entra sin registrarte",
+  "loginEntrar": "Entrar",
+  "loginGoogle": "Continuar con Google",
+  "loginGoogleDetalle": "Usa la cuenta que ya tienes en el celular. No llenas nada.",
+  "loginLema": "Pide lo de siempre, sin salir de casa",
+  "loginNoTengoCuenta": "No tengo cuenta, quiero registrarme",
+  "loginOCorreo": "o con tu correo",
+  "loginPrefieroCorreo": "Prefiero usar mi correo",
+  "loginYaTengoCuenta": "Ya tengo cuenta",
+  "marcaEjemplo": "Gloria, Costeño, Primor...",
+  "marcarComo": "Marcar {estado}",
+  "@marcarComo": {
+    "placeholders": {
+      "estado": {
+        "type": "String"
+      }
+    }
+  },
+  "metodoNoConfigurado": "La tienda aún no lo tiene configurado",
+  "metodoPagoEfectivo": "Efectivo al recibir",
+  "metodoPagoFiado": "Fiado (a la cuenta)",
+  "metodoPagoPlin": "Plin",
+  "metodoPagoTarjeta": "Tarjeta (pasarela)",
+  "metodoPagoYape": "Yape",
+  "miCuentaTitulo": "Mi cuenta",
+  "misPedidosTitulo": "Mis pedidos",
+  "modoDemoBanner": "Modo demo: los datos son de ejemplo y no se guardan.",
+  "montoCalculado": "Calculado del producto; puedes corregirlo",
+  "montoCosto": "Cuánto te costó",
+  "montoEscrito": "Lo escribiste tú",
+  "montoInvalido": "Monto inválido",
+  "montoMerma": "Cuánto perdiste",
+  "montoVenta": "Cuánto cobraste",
+  "movInsumoAjuste": "Ajuste",
+  "movInsumoCompra": "Compra",
+  "movInsumoConsumo": "Consumo",
+  "movInsumoMerma": "Merma",
+  "movInvAjuste": "Ajuste",
+  "movInvCompra": "Compra",
+  "movInvDevolucion": "Devolución",
+  "movInvMerma": "Merma",
+  "movInvProduccion": "Producción",
+  "movInvVenta": "Venta",
+  "movLotes": " · {n} lote(s)",
+  "@movLotes": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "movPresentaciones": " · {n} presentación(es)",
+  "@movPresentaciones": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "movUnidades": "{n} und",
+  "@movUnidades": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "movimientoRegistrado": "{tipo} registrada",
+  "@movimientoRegistrado": {
+    "placeholders": {
+      "tipo": {
+        "type": "String"
+      }
+    }
+  },
+  "movimientos": "Movimientos",
+  "navCaja": "Caja",
+  "navFiado": "Fiado",
+  "navInventario": "Inventario",
+  "navPedidos": "Pedidos",
+  "navPerfil": "Perfil",
+  "navTienda": "Tienda",
+  "no": "No",
+  "noSePudoCargar": "No se pudo cargar",
+  "nombreDelLote": "Nombre del lote",
+  "nombreDelLoteEjemplo": "plancha",
+  "notaEjemplo": "Horneada de la mañana",
+  "nuevoInsumo": "Nuevo insumo",
+  "nuevoProducto": "Nuevo producto",
+  "numeroCopiado": "Número copiado. Pégalo en {metodo}.",
+  "@numeroCopiado": {
+    "placeholders": {
+      "metodo": {
+        "type": "String"
+      }
+    }
+  },
+  "operacionNumero": "Operación {referencia}",
+  "@operacionNumero": {
+    "placeholders": {
+      "referencia": {
+        "type": "String"
+      }
+    }
+  },
+  "operacionSufijo": " · op. {referencia}",
+  "@operacionSufijo": {
+    "placeholders": {
+      "referencia": {
+        "type": "String"
+      }
+    }
+  },
+  "pagaConMetodo": "Paga {total} con {metodo}",
+  "@pagaConMetodo": {
+    "placeholders": {
+      "total": {
+        "type": "String"
+      },
+      "metodo": {
+        "type": "String"
+      }
+    }
+  },
+  "pagarTitulo": "Pagar",
+  "pagoNoLlego": "No llegó",
+  "pagoRecibido": "Pago recibido",
+  "pedidoEnviadoDetalle": "Tu pedido {codigo} por {total} llegó a la tienda.\n\n{estadoPago}.",
+  "@pedidoEnviadoDetalle": {
+    "placeholders": {
+      "codigo": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      },
+      "estadoPago": {
+        "type": "String"
+      }
+    }
+  },
+  "pedidoEnviadoTitulo": "¡Pedido enviado!",
+  "pedidoNumero": "Pedido {codigo}",
+  "@pedidoNumero": {
+    "placeholders": {
+      "codigo": {
+        "type": "String"
+      }
+    }
+  },
+  "pedidosSoloActivos": "Solo activos",
+  "perfilDatosGuardados": "Datos guardados",
+  "perfilTitulo": "Mi perfil",
+  "periodoHoy": "Hoy",
+  "periodoMes": "Este mes",
+  "periodoSemana": "Últimos 7 días",
+  "piePieDemo": "{tienda} · modo demo",
+  "@piePieDemo": {
+    "placeholders": {
+      "tienda": {
+        "type": "String"
+      }
+    }
+  },
+  "porLote": "Por {lote}",
+  "@porLote": {
+    "placeholders": {
+      "lote": {
+        "type": "String"
+      }
+    }
+  },
+  "porPresentacion": "Por {nombre}",
+  "@porPresentacion": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      }
+    }
+  },
+  "porUnidad": "Por unidad",
+  "porUnidadHelper": "por {unidad}",
+  "@porUnidadHelper": {
+    "placeholders": {
+      "unidad": {
+        "type": "String"
+      }
+    }
+  },
+  "porUnidadSufijo": " · {monto} por unidad",
+  "@porUnidadSufijo": {
+    "placeholders": {
+      "monto": {
+        "type": "String"
+      }
+    }
+  },
+  "precioInvalido": "Precio inválido",
+  "presentacionDe": " · {nombre} de {cantidad} {unidad}",
+  "@presentacionDe": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      },
+      "cantidad": {
+        "type": "String"
+      },
+      "unidad": {
+        "type": "String"
+      }
+    }
+  },
+  "presentacionEjemplo": "saco",
+  "presentacionesEnStock": "{n} {nombre}(s)",
+  "@presentacionesEnStock": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      },
+      "nombre": {
+        "type": "String"
+      }
+    }
+  },
+  "produccionRegistrada": "Producción registrada · {costo} por unidad",
+  "@produccionRegistrada": {
+    "placeholders": {
+      "costo": {
+        "type": "String"
+      }
+    }
+  },
+  "produccionRegistradaDif": "Registrada · {diferencia} vs lo esperado · {costo} c/u",
+  "@produccionRegistradaDif": {
+    "placeholders": {
+      "diferencia": {
+        "type": "String"
+      },
+      "costo": {
+        "type": "String"
+      }
+    }
+  },
+  "productoActualizado": "Producto actualizado",
+  "productoAgotado": "Agotado",
+  "productoAgregado": "Producto agregado",
+  "productoBajaSufijo": " · dado de baja",
+  "productoConStock": "{nombre} · {stock} en stock",
+  "@productoConStock": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      },
+      "stock": {
+        "type": "String"
+      }
+    }
+  },
+  "productoMargenSufijo": " · gana {monto}",
+  "@productoMargenSufijo": {
+    "placeholders": {
+      "monto": {
+        "type": "String"
+      }
+    }
+  },
+  "productoPaqueteSufijo": " · {unidades} x {precio}",
+  "@productoPaqueteSufijo": {
+    "placeholders": {
+      "unidades": {
+        "type": "String"
+      },
+      "precio": {
+        "type": "String"
+      }
+    }
+  },
+  "productoResumen": "{precio} · {unidad}{paquete}{margen}{baja}",
+  "@productoResumen": {
+    "placeholders": {
+      "precio": {
+        "type": "String"
+      },
+      "unidad": {
+        "type": "String"
+      },
+      "paquete": {
+        "type": "String"
+      },
+      "margen": {
+        "type": "String"
+      },
+      "baja": {
+        "type": "String"
+      }
+    }
+  },
+  "productoYaRegistrado": "{nombre} ya está registrado · stock {stock}",
+  "@productoYaRegistrado": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      },
+      "stock": {
+        "type": "String"
+      }
+    }
+  },
+  "productosSinStock": "{n} producto(s) sin stock",
+  "@productosSinStock": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "productosSinStockDetalle": "Los clientes no pueden pedirlos.",
+  "proximamente": "Próximamente",
+  "qrActualizado": "QR de {metodo} actualizado",
+  "@qrActualizado": {
+    "placeholders": {
+      "metodo": {
+        "type": "String"
+      }
+    }
+  },
+  "qrInstrucciones": "Escanea el QR desde tu app, o guarda la imagen si estás pagando desde este mismo celular.",
+  "qrNoCarga": "No se pudo cargar el QR",
+  "qrQuitado": "QR quitado",
+  "queVasAGastar": "Qué vas a gastar",
+  "quedanUnidades": "Quedan {n}",
+  "@quedanUnidades": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "quitar": "Quitar",
+  "recetaBoton": "Receta: qué insumos gasta",
+  "recetaCorrigelo": "Sale de la receta; corrígelo si esta vez usaste más o menos.",
+  "recetaCuantoSeGasta": "Cuánto se gasta para hacer {lote}.",
+  "@recetaCuantoSeGasta": {
+    "placeholders": {
+      "lote": {
+        "type": "String"
+      }
+    }
+  },
+  "recetaDe": "Receta de {producto}",
+  "@recetaDe": {
+    "placeholders": {
+      "producto": {
+        "type": "String"
+      }
+    }
+  },
+  "recetaGuardada": "Receta guardada",
+  "recetaLoteDe": "1 {nombreLote} ({unidades} {unidad})",
+  "@recetaLoteDe": {
+    "placeholders": {
+      "nombreLote": {
+        "type": "String"
+      },
+      "unidades": {
+        "type": "String"
+      },
+      "unidad": {
+        "type": "String"
+      }
+    }
+  },
+  "recetaUnLote": "un lote",
+  "registrar": "Registrar",
+  "registrarAbono": "Registrar abono",
+  "registrarCompra": "Registrar compra",
+  "registrarConsumo": "Registrar consumo",
+  "registrarMovimiento": "Registrar movimiento",
+  "registrarProduccion": "Registrar producción",
+  "registrarTipo": "Registrar {tipo}",
+  "@registrarTipo": {
+    "placeholders": {
+      "tipo": {
+        "type": "String"
+      }
+    }
+  },
+  "reintentar": "Reintentar",
+  "resumenProductos": "Resumen ({n} productos)",
+  "@resumenProductos": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "rindioMas": "Rindió {n} más de lo esperado ({esperado})",
+  "@rindioMas": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      },
+      "esperado": {
+        "type": "String"
+      }
+    }
+  },
+  "rindioMenos": "Rindió {n} menos de lo esperado ({esperado})",
+  "@rindioMenos": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      },
+      "esperado": {
+        "type": "String"
+      }
+    }
+  },
+  "rolCliente": "Cliente",
+  "rolTendero": "Tendero",
+  "saleDeCaja": "Sale {monto} de la caja",
+  "seCompraPor": "Se compra por",
+  "seGastaEn": "Se gasta en",
+  "seMostrara": "Se mostrará: {unidades} por {total}",
+  "@seMostrara": {
+    "placeholders": {
+      "unidades": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "seVendeDeA": "Se vende de a (opcional)",
+  "seVendeDeAEjemplo": "Ej.: 4 panes por un sol → escribe 4",
+  "segInsumos": "Insumos",
+  "segProductos": "Productos",
+  "sinAvisoHelper": "Déjalo vacío si no quieres aviso",
+  "sinCategoria": "Sin categoría",
+  "sinClientes": "Sin clientes registrados",
+  "sinClientesDetalle": "Cuando alguien cree su cuenta aparecerá aquí.",
+  "sinFiadoDetalle": "Pídele a la tienda que te habilite un cupo.",
+  "sinFiadoTitulo": "Sin cuenta de fiado",
+  "sinInsumosDetalle": "Agrégalos primero en Inventario → Insumos.",
+  "sinInsumosTitulo": "No hay insumos registrados",
+  "sinInsumosTodavia": "Sin insumos todavía",
+  "sinInsumosTodaviaDetalle": "Agrega la harina, la levadura y lo que uses para producir.",
+  "sinMovimientos": "Todavía no tienes movimientos.",
+  "sinMovimientosPeriodo": "Sin movimientos en este periodo",
+  "sinMovimientosPeriodoDetalle": "Registra una producción o espera la primera venta.",
+  "sinMovimientosPunto": "Sin movimientos.",
+  "sinPedidosActivos": "No hay pedidos activos",
+  "sinPedidosAun": "Aún no hay pedidos",
+  "sinPedidosAunDetalle": "Los pedidos nuevos aparecen aquí al instante.",
+  "sinPedidosDetalle": "Cuando hagas tu primer pedido lo verás aquí.",
+  "sinPedidosTitulo": "Todavía no has pedido nada",
+  "sinQr": "Todavía no subes tu QR",
+  "stockHelperExistente": "Para reponer, usa Producción o Compra en Caja",
+  "stockHelperNuevo": "Cuánto tienes ahora",
+  "stockInsuficiente": "Solo hay {stock} en stock y estás sacando {sacas}.",
+  "@stockInsuficiente": {
+    "placeholders": {
+      "stock": {
+        "type": "String"
+      },
+      "sacas": {
+        "type": "String"
+      }
+    }
+  },
+  "stockInsumoQueda": "Stock: {antes} → {despues} {unidad}",
+  "@stockInsumoQueda": {
+    "placeholders": {
+      "antes": {
+        "type": "String"
+      },
+      "despues": {
+        "type": "String"
+      },
+      "unidad": {
+        "type": "String"
+      }
+    }
+  },
+  "stockInvalido": "Stock inválido",
+  "stockQueda": "Stock: {antes} → {despues} {unidad}",
+  "@stockQueda": {
+    "placeholders": {
+      "antes": {
+        "type": "String"
+      },
+      "despues": {
+        "type": "String"
+      },
+      "unidad": {
+        "type": "String"
+      }
+    }
+  },
+  "subirQr": "Subir imagen del QR",
+  "teDebenEnTotal": "Te deben en total",
+  "temaAutomatico": "Según el celular",
+  "temaClaro": "Claro",
+  "temaOscuro": "Oscuro",
+  "tiendaExplicacion": "Esto es lo que ve el cliente cuando elige pagar con Yape o Plin. Si no pones número ni QR, el método no se le ofrece.",
+  "total": "Total",
+  "unidadEjemplo": "und, bolsa, kg...",
+  "unidadesPorLote": "Unidades por lote",
+  "unidadesPorLoteEjemplo": "Ej.: 30",
+  "usar": "Usar",
+  "vaciar": "Vaciar",
+  "validaClave": "Mínimo 6 caracteres",
+  "validaCorreo": "Correo no válido",
+  "validaEscribeNombre": "Escribe el nombre",
+  "validaNombre": "Escribe tu nombre",
+  "ventaMostrador": "Venta en mostrador",
+  "verCatalogo": "Ver catálogo",
+  "verificaPago": "Verifica {total} por {metodo}{operacion}",
+  "@verificaPago": {
+    "placeholders": {
+      "total": {
+        "type": "String"
+      },
+      "metodo": {
+        "type": "String"
+      },
+      "operacion": {
+        "type": "String"
+      }
+    }
+  },
+  "visibleEnCatalogo": "Visible en el catálogo"
+}

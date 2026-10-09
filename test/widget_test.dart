@@ -1,20 +1,22 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tienda_barrio/estado/providers.dart';
 import 'package:tienda_barrio/ui/auth/login_pantalla.dart';
 
+import 'ayuda.dart';
+
 void main() {
   /// [conGoogle] simula que la app ya está registrada en Google Cloud. En las
   /// pruebas no se puede tocar `Config`, que se resuelve al compilar, pero sí
   /// el provider que decide si el botón se muestra.
-  Future<void> abrir(WidgetTester tester, {bool conGoogle = false}) =>
+  Future<void> abrir(WidgetTester tester,
+          {bool conGoogle = false, String idioma = 'es'}) =>
       tester.pumpWidget(
         ProviderScope(
           overrides: [
             if (conGoogle) hayGoogleProvider.overrideWithValue(true),
           ],
-          child: const MaterialApp(home: LoginPantalla()),
+          child: pantalla(const LoginPantalla(), idioma: idioma),
         ),
       );
 
@@ -51,5 +53,19 @@ void main() {
     expect(find.text('Entrar'), findsOneWidget);
     // El botón de Google no desaparece al abrir el formulario.
     expect(find.text('Continuar con Google'), findsOneWidget);
+  });
+
+  testWidgets('en inglés la misma pantalla sale traducida', (tester) async {
+    await abrir(tester, idioma: 'en');
+
+    expect(find.text('Email'), findsOneWidget);
+    expect(find.text('Password'), findsOneWidget);
+    expect(find.text('Sign in'), findsOneWidget);
+    expect(find.text('Customer'), findsOneWidget);
+    expect(find.text('Shopkeeper'), findsOneWidget);
+
+    // Y no se cuela nada del español.
+    expect(find.text('Entrar'), findsNothing);
+    expect(find.text('Contraseña'), findsNothing);
   });
 }

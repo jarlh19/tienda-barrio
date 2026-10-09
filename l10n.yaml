@@ -1,0 +1,7 @@
+# El español es la plantilla: es el idioma en que se escribe la app y el que
+# manda si a una traducción le falta una clave.
+arb-dir: lib/l10n
+template-arb-file: app_es.arb
+output-localization-file: app_localizations.dart
+output-class: L
+nullable-getter: false

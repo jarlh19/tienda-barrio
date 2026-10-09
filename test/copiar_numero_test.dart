@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tienda_barrio/ui/comun/widgets.dart';
 
+import 'ayuda.dart';
+
 void main() {
   late List<MethodCall> llamadas;
 
@@ -23,13 +25,11 @@ void main() {
   });
 
   testWidgets('copia el número tal cual y lo avisa', (tester) async {
-    await tester.pumpWidget(
-      const MaterialApp(
-        home: Scaffold(
-          body: BotonCopiar(texto: '999888777', aviso: 'Número copiado'),
-        ),
+    await tester.pumpWidget(pantalla(
+      const Scaffold(
+        body: BotonCopiar(texto: '999888777', aviso: 'Número copiado'),
       ),
-    );
+    ));
 
     await tester.tap(find.byType(IconButton));
     await tester.pumpAndSettle();
@@ -52,10 +52,7 @@ void main() {
     });
 
     await tester.pumpWidget(
-      const MaterialApp(
-        home: Scaffold(body: BotonCopiar(texto: '999888777')),
-      ),
-    );
+        pantalla(const Scaffold(body: BotonCopiar(texto: '999888777'))));
 
     await tester.tap(find.byType(IconButton));
     await tester.pumpAndSettle();

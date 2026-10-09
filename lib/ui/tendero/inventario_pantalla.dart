@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/formato.dart';
 import '../../datos/modelos/modelos.dart';
 import '../../estado/providers.dart';
+import '../../core/config.dart';
+import '../../l10n/app_localizations.dart';
 import '../comun/widgets.dart';
 import 'escaner_pantalla.dart';
 import 'insumos_pantalla.dart';
@@ -27,10 +29,12 @@ class _InventarioPantallaState extends ConsumerState<InventarioPantalla> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Inventario'),
+        title: Text(L.of(context).navInventario),
         actions: [
           IconButton(
-            tooltip: _verInsumos ? 'Nuevo insumo' : 'Agregar sin código',
+            tooltip: _verInsumos
+                ? L.of(context).nuevoInsumo
+                : L.of(context).agregarSinCodigo,
             icon: const Icon(Icons.add),
             onPressed: () => _verInsumos
                 ? abrirEditorInsumo(context, ref, null)
@@ -42,9 +46,11 @@ class _InventarioPantallaState extends ConsumerState<InventarioPantalla> {
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
             child: SegmentedButton<bool>(
-              segments: const [
-                ButtonSegment(value: false, label: Text('Productos')),
-                ButtonSegment(value: true, label: Text('Insumos')),
+              segments: [
+                ButtonSegment(
+                    value: false, label: Text(L.of(context).segProductos)),
+                ButtonSegment(
+                    value: true, label: Text(L.of(context).segInsumos)),
               ],
               selected: {_verInsumos},
               onSelectionChanged: (s) => setState(() => _verInsumos = s.first),
@@ -60,7 +66,7 @@ class _InventarioPantallaState extends ConsumerState<InventarioPantalla> {
               heroTag: 'fab-inventario',
               onPressed: () => escanearYRegistrar(context, ref),
               icon: const Icon(Icons.qr_code_scanner),
-              label: const Text('Escanear'),
+              label: Text(L.of(context).escanear),
             ),
       body: _verInsumos
           ? const InsumosVista()
@@ -71,10 +77,10 @@ class _InventarioPantallaState extends ConsumerState<InventarioPantalla> {
           alReintentar: () => ref.invalidate(inventarioProvider),
           constructor: (lista) {
             if (lista.isEmpty) {
-              return const EstadoVacio(
+              return EstadoVacio(
                 icono: Icons.inventory_2_outlined,
-                titulo: 'Inventario vacío',
-                detalle: 'Agrega tu primer producto con el botón de abajo.',
+                titulo: L.of(context).inventarioVacio,
+                detalle: L.of(context).inventarioVacioDetalle,
               );
             }
             final agotados = lista.where((p) => !p.hayStock && p.activo).length;
@@ -88,9 +94,10 @@ class _InventarioPantallaState extends ConsumerState<InventarioPantalla> {
                       color: Theme.of(context).colorScheme.errorContainer,
                       child: ListTile(
                         leading: const Icon(Icons.warning_amber_outlined),
-                        title: Text('$agotados producto(s) sin stock'),
+                        title:
+                            Text(L.of(context).productosSinStock(agotados)),
                         subtitle:
-                            const Text('Los clientes no pueden pedirlos.'),
+                            Text(L.of(context).productosSinStockDetalle),
                       ),
                     ),
                   ),
@@ -136,8 +143,8 @@ class _FilaProducto extends StatelessWidget {
         onTap: alEditar,
         leading: IconButton(
           tooltip: producto.seProduce
-              ? 'Registrar producción'
-              : 'Registrar compra',
+              ? L.of(context).registrarProduccion
+              : L.of(context).registrarCompra,
           icon: Icon(producto.seProduce
               ? Icons.bakery_dining_outlined
               : Icons.add_shopping_cart),
@@ -152,10 +159,20 @@ class _FilaProducto extends StatelessWidget {
           ),
         ),
         subtitle: Text(
-          '${Formato.soles(producto.precio)} · ${producto.unidad}'
-          '${producto.seVendePorPaquete ? ' · ${producto.unidadesPorPaquete} x ${Formato.soles(producto.precioPaquete)}' : ''}'
-          '${producto.costo > 0 ? ' · gana ${Formato.soles(producto.margenUnitario)}' : ''}'
-          '${producto.activo ? '' : ' · dado de baja'}',
+          L.of(context).productoResumen(
+            Formato.soles(producto.precio),
+            producto.unidad,
+            producto.seVendePorPaquete
+                ? L.of(context).productoPaqueteSufijo(
+                    '${producto.unidadesPorPaquete}',
+                    Formato.soles(producto.precioPaquete))
+                : '',
+            producto.costo > 0
+                ? L.of(context).productoMargenSufijo(
+                    Formato.soles(producto.margenUnitario))
+                : '',
+            producto.activo ? '' : L.of(context).productoBajaSufijo,
+          ),
         ),
         trailing: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -172,7 +189,7 @@ class _FilaProducto extends StatelessWidget {
                         : null,
               ),
             ),
-            Text('en stock', style: t.textTheme.labelSmall),
+            Text(L.of(context).enStock, style: t.textTheme.labelSmall),
           ],
         ),
       ),
@@ -200,7 +217,8 @@ Future<void> escanearYRegistrar(BuildContext context, WidgetRef ref) async {
 
     mostrarAviso(
       context,
-      '${existente.nombreCompleto} ya está registrado · stock ${existente.stock}',
+      L.of(context).productoYaRegistrado(
+          existente.nombreCompleto, Formato.cantidad(existente.stock)),
     );
     await _abrirEditor(context, ref, existente);
   } catch (e) {
@@ -341,7 +359,7 @@ class _EditorProductoState extends ConsumerState<_EditorProducto> {
       final ocupadoPor = await _duenoDelCodigo(_codigo.text.trim());
       if (ocupadoPor != null) {
         if (mounted) {
-          mostrarAviso(context, 'Ese código ya es de "$ocupadoPor".');
+          mostrarAviso(context, L.of(context).codigoYaEsDe(ocupadoPor));
         }
         return;
       }
@@ -371,7 +389,11 @@ class _EditorProductoState extends ConsumerState<_EditorProducto> {
       if (!mounted) return;
       refrescarTodo(ref);
       Navigator.of(context).pop();
-      mostrarAviso(context, _esNuevo ? 'Producto agregado' : 'Producto actualizado');
+      mostrarAviso(
+          context,
+          _esNuevo
+              ? L.of(context).productoAgregado
+              : L.of(context).productoActualizado);
     } catch (e) {
       if (mounted) mostrarError(context, e);
     } finally {
@@ -383,19 +405,16 @@ class _EditorProductoState extends ConsumerState<_EditorProducto> {
     final confirmado = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('¿Dar de baja?'),
-        content: const Text(
-          'El producto deja de aparecer en el catálogo, pero se mantiene en '
-          'los pedidos anteriores.',
-        ),
+        title: Text(L.of(context).darDeBajaPregunta),
+        content: Text(L.of(context).darDeBajaDetalle),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('No'),
+            child: Text(L.of(context).no),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Dar de baja'),
+            child: Text(L.of(context).darDeBaja),
           ),
         ],
       ),
@@ -427,25 +446,28 @@ class _EditorProductoState extends ConsumerState<_EditorProducto> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                _esNuevo ? 'Nuevo producto' : 'Editar producto',
+                _esNuevo
+                    ? L.of(context).nuevoProducto
+                    : L.of(context).editarProducto,
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _nombre,
                 textCapitalization: TextCapitalization.sentences,
-                decoration: const InputDecoration(labelText: 'Nombre'),
+                decoration:
+                    InputDecoration(labelText: L.of(context).campoNombre),
                 validator: (v) => (v == null || v.trim().length < 2)
-                    ? 'Escribe el nombre'
+                    ? L.of(context).validaEscribeNombre
                     : null,
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _marca,
                 textCapitalization: TextCapitalization.words,
-                decoration: const InputDecoration(
-                  labelText: 'Marca',
-                  hintText: 'Gloria, Costeño, Primor...',
+                decoration: InputDecoration(
+                  labelText: L.of(context).campoMarca,
+                  hintText: L.of(context).marcaEjemplo,
                 ),
               ),
               const SizedBox(height: 12),
@@ -453,11 +475,11 @@ class _EditorProductoState extends ConsumerState<_EditorProducto> {
                 controller: _codigo,
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
-                  labelText: 'Código de barras',
-                  helperText: 'Déjalo vacío si se vende suelto',
+                  labelText: L.of(context).escanearCodigoBarras,
+                  helperText: L.of(context).codigoBarrasVacio,
                   prefixIcon: const Icon(Icons.barcode_reader),
                   suffixIcon: IconButton(
-                    tooltip: 'Escanear',
+                    tooltip: L.of(context).escanear,
                     icon: const Icon(Icons.qr_code_scanner),
                     onPressed: _escanearCodigo,
                   ),
@@ -471,13 +493,15 @@ class _EditorProductoState extends ConsumerState<_EditorProducto> {
                       controller: _precio,
                       keyboardType:
                           const TextInputType.numberWithOptions(decimal: true),
-                      decoration: const InputDecoration(
-                        labelText: 'Precio',
-                        prefixText: 'S/ ',
+                      decoration: InputDecoration(
+                        labelText: L.of(context).campoPrecio,
+                        prefixText: '${Config.simboloMoneda} ',
                       ),
                       validator: (v) {
                         final n = double.tryParse((v ?? '').replaceAll(',', '.'));
-                        if (n == null || n <= 0) return 'Precio inválido';
+                        if (n == null || n <= 0) {
+                          return L.of(context).precioInvalido;
+                        }
                         return null;
                       },
                     ),
@@ -488,15 +512,17 @@ class _EditorProductoState extends ConsumerState<_EditorProducto> {
                       controller: _costo,
                       keyboardType:
                           const TextInputType.numberWithOptions(decimal: true),
-                      decoration: const InputDecoration(
-                        labelText: 'Costo',
-                        prefixText: 'S/ ',
-                        helperText: 'Lo que te cuesta',
+                      decoration: InputDecoration(
+                        labelText: L.of(context).campoCosto,
+                        prefixText: '${Config.simboloMoneda} ',
+                        helperText: L.of(context).costoHelper,
                       ),
                       validator: (v) {
                         if (v == null || v.trim().isEmpty) return null;
                         final n = double.tryParse(v.replaceAll(',', '.'));
-                        return (n == null || n < 0) ? 'Costo inválido' : null;
+                        return (n == null || n < 0)
+                            ? L.of(context).costoInvalido
+                            : null;
                       },
                     ),
                   ),
@@ -507,17 +533,17 @@ class _EditorProductoState extends ConsumerState<_EditorProducto> {
                 controller: _stock,
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
-                  labelText: 'Stock',
+                  labelText: L.of(context).campoStock,
                   helperText: _esNuevo
-                      ? 'Cuánto tienes ahora'
-                      : 'Para reponer, usa Producción o Compra en Caja',
+                      ? L.of(context).stockHelperNuevo
+                      : L.of(context).stockHelperExistente,
                 ),
                 // Ya existiendo, el stock se mueve por el kardex: se deja ver
                 // pero no se edita a mano, para que caja e inventario cuadren.
                 enabled: _esNuevo,
                 validator: (v) {
                   final n = int.tryParse(v ?? '');
-                  if (n == null || n < 0) return 'Stock inválido';
+                  if (n == null || n < 0) return L.of(context).stockInvalido;
                   return null;
                 },
               ),
@@ -530,7 +556,7 @@ class _EditorProductoState extends ConsumerState<_EditorProducto> {
                     onPressed: () =>
                         abrirEditorReceta(context, ref, widget.producto!),
                     icon: const Icon(Icons.receipt_long_outlined),
-                    label: const Text('Receta: qué insumos gasta'),
+                    label: Text(L.of(context).recetaBoton),
                   ),
                 ),
               const SizedBox(height: 12),
@@ -539,9 +565,9 @@ class _EditorProductoState extends ConsumerState<_EditorProducto> {
                   Expanded(
                     child: TextFormField(
                       controller: _unidad,
-                      decoration: const InputDecoration(
-                        labelText: 'Unidad',
-                        hintText: 'und, bolsa, kg...',
+                      decoration: InputDecoration(
+                        labelText: L.of(context).campoUnidad,
+                        hintText: L.of(context).unidadEjemplo,
                       ),
                     ),
                   ),
@@ -550,11 +576,12 @@ class _EditorProductoState extends ConsumerState<_EditorProducto> {
                     child: DropdownButtonFormField<String?>(
                       initialValue: _categoriaId,
                       isExpanded: true,
-                      decoration: const InputDecoration(labelText: 'Categoría'),
+                      decoration: InputDecoration(
+                          labelText: L.of(context).campoCategoria),
                       items: [
-                        const DropdownMenuItem<String?>(
+                        DropdownMenuItem<String?>(
                           value: null,
-                          child: Text('Sin categoría'),
+                          child: Text(L.of(context).sinCategoria),
                         ),
                         for (final c in categorias)
                           DropdownMenuItem<String?>(
@@ -575,14 +602,16 @@ class _EditorProductoState extends ConsumerState<_EditorProducto> {
                       controller: _contenido,
                       keyboardType:
                           const TextInputType.numberWithOptions(decimal: true),
-                      decoration: const InputDecoration(
-                        labelText: 'Peso o volumen',
+                      decoration: InputDecoration(
+                        labelText: L.of(context).campoPesoVolumen,
                         hintText: '900',
                       ),
                       validator: (v) {
                         if (v == null || v.trim().isEmpty) return null;
                         final n = double.tryParse(v.replaceAll(',', '.'));
-                        return (n == null || n <= 0) ? 'Cantidad inválida' : null;
+                        return (n == null || n <= 0)
+                            ? L.of(context).cantidadInvalida
+                            : null;
                       },
                     ),
                   ),
@@ -590,7 +619,8 @@ class _EditorProductoState extends ConsumerState<_EditorProducto> {
                   Expanded(
                     child: DropdownButtonFormField<String>(
                       initialValue: _medida,
-                      decoration: const InputDecoration(labelText: 'Medida'),
+                      decoration:
+                          InputDecoration(labelText: L.of(context).campoMedida),
                       items: const [
                         DropdownMenuItem(value: 'und', child: Text('und')),
                         DropdownMenuItem(value: 'g', child: Text('g')),
@@ -606,25 +636,27 @@ class _EditorProductoState extends ConsumerState<_EditorProducto> {
               const SizedBox(height: 12),
               TextFormField(
                 controller: _imagen,
-                decoration: const InputDecoration(
-                  labelText: 'URL de la foto (opcional)',
+                decoration: InputDecoration(
+                  labelText: L.of(context).campoFotoUrl,
                 ),
               ),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
                 value: _activo,
                 onChanged: (v) => setState(() => _activo = v),
-                title: const Text('Visible en el catálogo'),
+                title: Text(L.of(context).visibleEnCatalogo),
               ),
               const SizedBox(height: 8),
               FilledButton(
                 onPressed: _guardando ? null : _guardar,
-                child: Text(_esNuevo ? 'Agregar' : 'Guardar'),
+                child: Text(_esNuevo
+                    ? L.of(context).agregar
+                    : L.of(context).guardar),
               ),
               if (!_esNuevo)
                 TextButton(
                   onPressed: _guardando ? null : _darDeBaja,
-                  child: const Text('Dar de baja'),
+                  child: Text(L.of(context).darDeBaja),
                 ),
             ],
           ),
@@ -661,11 +693,12 @@ class _BloqueVentaState extends State<_BloqueVenta> {
         keyboardType: TextInputType.number,
         onChanged: (_) => setState(() {}),
         decoration: InputDecoration(
-          labelText: 'Se vende de a (opcional)',
+          labelText: L.of(context).seVendeDeA,
           prefixIcon: const Icon(Icons.sell_outlined),
           helperText: unidades > 1 && total > 0
-              ? 'Se mostrará: $unidades por ${Formato.soles(total)}'
-              : 'Ej.: 4 panes por un sol → escribe 4',
+              ? L.of(context)
+                  .seMostrara('$unidades', Formato.soles(total))
+              : L.of(context).seVendeDeAEjemplo,
         ),
       ),
     );
@@ -695,9 +728,9 @@ class _BloqueProduccionState extends State<_BloqueProduccion> {
               controller: widget.porLote,
               keyboardType: TextInputType.number,
               onChanged: (_) => setState(() {}),
-              decoration: const InputDecoration(
-                labelText: 'Unidades por lote',
-                helperText: 'Ej.: 30',
+              decoration: InputDecoration(
+                labelText: L.of(context).unidadesPorLote,
+                helperText: L.of(context).unidadesPorLoteEjemplo,
               ),
             ),
           ),
@@ -705,9 +738,9 @@ class _BloqueProduccionState extends State<_BloqueProduccion> {
           Expanded(
             child: TextFormField(
               controller: widget.nombreLote,
-              decoration: const InputDecoration(
-                labelText: 'Nombre del lote',
-                hintText: 'plancha',
+              decoration: InputDecoration(
+                labelText: L.of(context).nombreDelLote,
+                hintText: L.of(context).nombreDelLoteEjemplo,
               ),
             ),
           ),

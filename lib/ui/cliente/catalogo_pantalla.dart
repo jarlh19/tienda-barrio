@@ -9,6 +9,7 @@ import '../../core/formato.dart';
 import '../../datos/modelos/modelos.dart';
 import '../../estado/carrito.dart';
 import '../../estado/providers.dart';
+import '../../l10n/app_localizations.dart';
 import '../comun/widgets.dart';
 
 class CatalogoPantalla extends ConsumerWidget {
@@ -33,10 +34,10 @@ class CatalogoPantalla extends ConsumerWidget {
                   alReintentar: () => ref.invalidate(productosProvider),
                   constructor: (lista) {
                     if (lista.isEmpty) {
-                      return const EstadoVacio(
+                      return EstadoVacio(
                         icono: Icons.search_off,
-                        titulo: 'Sin resultados',
-                        detalle: 'Prueba con otro nombre o cambia de categoría.',
+                        titulo: L.of(context).catalogoSinResultados,
+                        detalle: L.of(context).catalogoSinResultadosDetalle,
                       );
                     }
                     return GridView.builder(
@@ -106,7 +107,7 @@ class _BuscadorState extends ConsumerState<_Buscador> {
         onChanged: _cambio,
         textInputAction: TextInputAction.search,
         decoration: InputDecoration(
-          hintText: '¿Qué necesitas hoy?',
+          hintText: L.of(context).catalogoBuscar,
           prefixIcon: const Icon(Icons.search),
           suffixIcon: _ctrl.text.isEmpty
               ? null
@@ -142,7 +143,7 @@ class _FilaCategorias extends ConsumerWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 4),
               child: ChoiceChip(
-                label: const Text('Todo'),
+                label: Text(L.of(context).filtroTodo),
                 selected: seleccion == null,
                 onSelected: (_) =>
                     ref.read(filtroCategoriaProvider.notifier).state = null,
@@ -221,7 +222,7 @@ class _TarjetaProducto extends ConsumerWidget {
                 const SizedBox(height: 8),
                 if (agotado)
                   Text(
-                    'Agotado',
+                    L.of(context).productoAgotado,
                     style: t.textTheme.labelMedium
                         ?.copyWith(color: t.colorScheme.error),
                   )
@@ -234,7 +235,7 @@ class _TarjetaProducto extends ConsumerWidget {
                         padding: EdgeInsets.zero,
                         minimumSize: const Size.fromHeight(34),
                       ),
-                      child: const Text('Agregar'),
+                      child: Text(L.of(context).agregar),
                     ),
                   )
                 else
@@ -247,7 +248,8 @@ class _TarjetaProducto extends ConsumerWidget {
                   Padding(
                     padding: const EdgeInsets.only(top: 4),
                     child: Text(
-                      'Quedan ${producto.stock}',
+                      L.of(context).quedanUnidades(
+                          Formato.cantidad(producto.stock)),
                       style: t.textTheme.labelSmall
                           ?.copyWith(color: t.colorScheme.tertiary),
                     ),

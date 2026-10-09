@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/formato.dart';
 import '../../datos/modelos/modelos.dart';
 import '../../estado/providers.dart';
+import '../../l10n/app_localizations.dart';
 import '../comun/widgets.dart';
 
 class MiFiadoPantalla extends ConsumerWidget {
@@ -14,7 +15,7 @@ class MiFiadoPantalla extends ConsumerWidget {
     final cuenta = ref.watch(miCuentaFiadoProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Mi cuenta')),
+      appBar: AppBar(title: Text(L.of(context).miCuentaTitulo)),
       body: RefreshIndicator(
         onRefresh: () async => ref.invalidate(miCuentaFiadoProvider),
         child: AsyncVista(
@@ -22,10 +23,10 @@ class MiFiadoPantalla extends ConsumerWidget {
           alReintentar: () => ref.invalidate(miCuentaFiadoProvider),
           constructor: (c) {
             if (c == null) {
-              return const EstadoVacio(
+              return EstadoVacio(
                 icono: Icons.account_balance_wallet_outlined,
-                titulo: 'Sin cuenta de fiado',
-                detalle: 'Pídele a la tienda que te habilite un cupo.',
+                titulo: L.of(context).sinFiadoTitulo,
+                detalle: L.of(context).sinFiadoDetalle,
               );
             }
             return ListView(
@@ -33,13 +34,13 @@ class MiFiadoPantalla extends ConsumerWidget {
               children: [
                 ResumenFiado(cuenta: c),
                 const SizedBox(height: 20),
-                Text('Movimientos',
+                Text(L.of(context).movimientos,
                     style: Theme.of(context).textTheme.titleSmall),
                 const SizedBox(height: 8),
                 if (c.movimientos.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 24),
-                    child: Text('Todavía no tienes movimientos.',
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 24),
+                    child: Text(L.of(context).sinMovimientos,
                         textAlign: TextAlign.center),
                   ),
                 for (final m in c.movimientos) FilaMovimiento(movimiento: m),
@@ -60,6 +61,7 @@ class ResumenFiado extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = Theme.of(context);
+    final l = L.of(context);
     final usado = cuenta.limite == 0 ? 0.0 : (cuenta.saldo / cuenta.limite).clamp(0.0, 1.0);
     return Card(
       child: Padding(
@@ -67,7 +69,7 @@ class ResumenFiado extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Debes', style: t.textTheme.labelLarge),
+            Text(l.fiadoDebes, style: t.textTheme.labelLarge),
             const SizedBox(height: 4),
             Text(
               Formato.soles(cuenta.saldo),
@@ -86,8 +88,8 @@ class ResumenFiado extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Cupo disponible ${Formato.soles(cuenta.disponible)} '
-              'de ${Formato.soles(cuenta.limite)}',
+              l.fiadoCupoDisponible(Formato.soles(cuenta.disponible),
+                  Formato.soles(cuenta.limite)),
               style: t.textTheme.bodySmall
                   ?.copyWith(color: t.colorScheme.onSurfaceVariant),
             ),
@@ -106,6 +108,7 @@ class FilaMovimiento extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = Theme.of(context);
+    final l = L.of(context);
     final esCargo = movimiento.tipo == TipoMovimiento.cargo;
     return ListTile(
       contentPadding: EdgeInsets.zero,
@@ -122,9 +125,9 @@ class FilaMovimiento extends StatelessWidget {
         ),
       ),
       title: Text(movimiento.descripcion.isEmpty
-          ? (esCargo ? 'Consumo' : 'Abono')
+          ? (esCargo ? l.fiadoConsumo : l.fiadoAbono)
           : movimiento.descripcion),
-      subtitle: Text(Formato.fechaHora(movimiento.fecha)),
+      subtitle: Text(Formato.fechaHora(l, movimiento.fecha)),
       trailing: Text(
         '${esCargo ? '+' : '-'}${Formato.soles(movimiento.monto)}',
         style: t.textTheme.titleSmall?.copyWith(

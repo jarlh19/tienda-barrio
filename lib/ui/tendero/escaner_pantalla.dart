@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
+import '../../l10n/app_localizations.dart';
+
 /// Lee el código de barras del envase con la cámara y devuelve el número.
 ///
 /// Se abre con `Navigator.push<String>` y retorna el código leído, o `null`
@@ -55,13 +57,13 @@ class _EscanerPantallaState extends State<EscanerPantalla> {
     final codigo = await showDialog<String>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Escribir el código'),
+        title: Text(L.of(context).escanearEscribirCodigo),
         content: TextField(
           controller: ctrl,
           autofocus: true,
           keyboardType: TextInputType.number,
-          decoration: const InputDecoration(
-            labelText: 'Código de barras',
+          decoration: InputDecoration(
+            labelText: L.of(context).escanearCodigoBarras,
             hintText: '7750243011408',
           ),
           onSubmitted: (v) => Navigator.of(context).pop(v),
@@ -69,11 +71,11 @@ class _EscanerPantallaState extends State<EscanerPantalla> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancelar'),
+            child: Text(L.of(context).cancelar),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(ctrl.text),
-            child: const Text('Usar'),
+            child: Text(L.of(context).usar),
           ),
         ],
       ),
@@ -88,15 +90,15 @@ class _EscanerPantallaState extends State<EscanerPantalla> {
       appBar: AppBar(
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
-        title: const Text('Escanear producto'),
+        title: Text(L.of(context).escanearTitulo),
         actions: [
           IconButton(
-            tooltip: 'Linterna',
+            tooltip: L.of(context).linterna,
             icon: const Icon(Icons.flashlight_on_outlined),
             onPressed: () => _controlador.toggleTorch(),
           ),
           IconButton(
-            tooltip: 'Cambiar cámara',
+            tooltip: L.of(context).cambiarCamara,
             icon: const Icon(Icons.cameraswitch_outlined),
             onPressed: () => _controlador.switchCamera(),
           ),
@@ -122,18 +124,18 @@ class _EscanerPantallaState extends State<EscanerPantalla> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text(
-                      'Apunta al código de barras del envase',
-                      style: TextStyle(color: Colors.white70),
+                    Text(
+                      L.of(context).escanearInstruccion,
+                      style: const TextStyle(color: Colors.white70),
                     ),
                     const SizedBox(height: 12),
                     TextButton.icon(
                       onPressed: _escribirAMano,
                       icon: const Icon(Icons.keyboard_outlined,
                           color: Colors.white),
-                      label: const Text(
-                        'Escribirlo a mano',
-                        style: TextStyle(color: Colors.white),
+                      label: Text(
+                        L.of(context).escanearAMano,
+                        style: const TextStyle(color: Colors.white),
                       ),
                     ),
                   ],
@@ -149,10 +151,10 @@ class _EscanerPantallaState extends State<EscanerPantalla> {
   String _mensajeDeError(MobileScannerException error) =>
       switch (error.errorCode) {
         MobileScannerErrorCode.permissionDenied =>
-          'La app necesita permiso de cámara para leer códigos.',
+          L.of(context).camaraSinPermiso,
         MobileScannerErrorCode.unsupported =>
-          'Este dispositivo no puede escanear códigos.',
-        _ => 'No se pudo abrir la cámara.',
+          L.of(context).camaraNoSoportada,
+        _ => L.of(context).camaraNoAbre,
       };
 }
 
@@ -184,7 +186,7 @@ class _SinCamara extends StatelessWidget {
               FilledButton.icon(
                 onPressed: alEscribir,
                 icon: const Icon(Icons.keyboard_outlined),
-                label: const Text('Escribir el código'),
+                label: Text(L.of(context).escanearEscribirCodigo),
               ),
             ],
           ),

@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/formato.dart';
 import '../../datos/modelos/modelos.dart';
 import '../../estado/providers.dart';
+import '../../core/config.dart';
+import '../../l10n/app_localizations.dart';
 import '../comun/widgets.dart';
 
 /// Almacén de materia prima: harina, levadura, manteca. No se vende, se gasta.
@@ -23,11 +25,11 @@ class InsumosVista extends ConsumerWidget {
           if (lista.isEmpty) {
             return EstadoVacio(
               icono: Icons.grain,
-              titulo: 'Sin insumos todavía',
-              detalle: 'Agrega la harina, la levadura y lo que uses para producir.',
+              titulo: L.of(context).sinInsumosTodavia,
+              detalle: L.of(context).sinInsumosTodaviaDetalle,
               accion: FilledButton.tonal(
                 onPressed: () => abrirEditorInsumo(context, ref, null),
-                child: const Text('Agregar insumo'),
+                child: Text(L.of(context).agregarInsumo),
               ),
             );
           }
@@ -42,7 +44,8 @@ class InsumosVista extends ConsumerWidget {
                     color: Theme.of(context).colorScheme.tertiaryContainer,
                     child: ListTile(
                       leading: const Icon(Icons.notification_important_outlined),
-                      title: Text('${bajos.length} insumo(s) por acabarse'),
+                      title: Text(
+                          L.of(context).insumosPorAcabarse(bajos.length)),
                       subtitle: Text(bajos.map((i) => i.nombre).join(', ')),
                     ),
                   ),
@@ -80,7 +83,7 @@ class _FilaInsumo extends StatelessWidget {
       child: ListTile(
         onTap: alEditar,
         leading: IconButton(
-          tooltip: 'Registrar compra',
+          tooltip: L.of(context).registrarCompra,
           icon: const Icon(Icons.local_shipping_outlined),
           onPressed: alComprar,
         ),
@@ -89,8 +92,16 @@ class _FilaInsumo extends StatelessWidget {
           style: const TextStyle(fontWeight: FontWeight.w600),
         ),
         subtitle: Text(
-          '${Formato.soles(insumo.costoUnitario)} por ${insumo.unidad}'
-          '${insumo.sePorPresentacion ? ' · ${insumo.nombrePresentacion} de ${Formato.cantidad(insumo.unidadesPorPresentacion)} ${insumo.unidad}' : ''}',
+          L.of(context).costoPorUnidadInsumo(
+            Formato.soles(insumo.costoUnitario),
+            insumo.unidad,
+            insumo.sePorPresentacion
+                ? L.of(context).presentacionDe(
+                    insumo.nombrePresentacion,
+                    Formato.cantidad(insumo.unidadesPorPresentacion),
+                    insumo.unidad)
+                : '',
+          ),
         ),
         trailing: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -105,7 +116,9 @@ class _FilaInsumo extends StatelessWidget {
             ),
             if (insumo.sePorPresentacion)
               Text(
-                '${Formato.cantidad(insumo.presentacionesEnStock)} ${insumo.nombrePresentacion}(s)',
+                L.of(context).presentacionesEnStock(
+                    Formato.cantidad(insumo.presentacionesEnStock),
+                    insumo.nombrePresentacion),
                 style: t.textTheme.labelSmall,
               ),
           ],
@@ -215,7 +228,11 @@ class _EditorInsumoState extends ConsumerState<_EditorInsumo> {
       if (!mounted) return;
       refrescarTodo(ref);
       Navigator.of(context).pop();
-      mostrarAviso(context, _esNuevo ? 'Insumo agregado' : 'Insumo actualizado');
+      mostrarAviso(
+          context,
+          _esNuevo
+              ? L.of(context).insumoAgregado
+              : L.of(context).insumoActualizado);
     } catch (e) {
       if (mounted) mostrarError(context, e);
     } finally {
@@ -246,19 +263,21 @@ class _EditorInsumoState extends ConsumerState<_EditorInsumo> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                _esNuevo ? 'Nuevo insumo' : 'Editar insumo',
+                _esNuevo
+                    ? L.of(context).nuevoInsumo
+                    : L.of(context).editarInsumo,
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _nombre,
                 textCapitalization: TextCapitalization.sentences,
-                decoration: const InputDecoration(
-                  labelText: 'Nombre',
-                  hintText: 'Harina',
+                decoration: InputDecoration(
+                  labelText: L.of(context).campoNombre,
+                  hintText: L.of(context).insumoNombreEjemplo,
                 ),
                 validator: (v) => (v == null || v.trim().length < 2)
-                    ? 'Escribe el nombre'
+                    ? L.of(context).validaEscribeNombre
                     : null,
               ),
               const SizedBox(height: 12),
@@ -267,15 +286,16 @@ class _EditorInsumoState extends ConsumerState<_EditorInsumo> {
                   Expanded(
                     child: TextFormField(
                       controller: _marca,
-                      decoration: const InputDecoration(labelText: 'Marca'),
+                      decoration:
+                          InputDecoration(labelText: L.of(context).campoMarca),
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: DropdownButtonFormField<String>(
                       initialValue: _unidad,
-                      decoration: const InputDecoration(
-                        labelText: 'Se gasta en',
+                      decoration: InputDecoration(
+                        labelText: L.of(context).seGastaEn,
                       ),
                       items: const [
                         DropdownMenuItem(value: 'kg', child: Text('kg')),
@@ -295,9 +315,9 @@ class _EditorInsumoState extends ConsumerState<_EditorInsumo> {
                   Expanded(
                     child: TextFormField(
                       controller: _presentacion,
-                      decoration: const InputDecoration(
-                        labelText: 'Se compra por',
-                        hintText: 'saco',
+                      decoration: InputDecoration(
+                        labelText: L.of(context).seCompraPor,
+                        hintText: L.of(context).presentacionEjemplo,
                       ),
                     ),
                   ),
@@ -308,9 +328,9 @@ class _EditorInsumoState extends ConsumerState<_EditorInsumo> {
                       keyboardType:
                           const TextInputType.numberWithOptions(decimal: true),
                       decoration: InputDecoration(
-                        labelText: 'Trae',
+                        labelText: L.of(context).campoTrae,
                         suffixText: _unidad,
-                        helperText: 'Ej.: 50',
+                        helperText: L.of(context).campoTraeEjemplo,
                       ),
                     ),
                   ),
@@ -326,7 +346,7 @@ class _EditorInsumoState extends ConsumerState<_EditorInsumo> {
                         keyboardType: const TextInputType.numberWithOptions(
                             decimal: true),
                         decoration: InputDecoration(
-                          labelText: 'Tengo ahora',
+                          labelText: L.of(context).campoTengoAhora,
                           suffixText: _unidad,
                         ),
                       ),
@@ -338,9 +358,9 @@ class _EditorInsumoState extends ConsumerState<_EditorInsumo> {
                         keyboardType: const TextInputType.numberWithOptions(
                             decimal: true),
                         decoration: InputDecoration(
-                          labelText: 'Me cuesta',
-                          prefixText: 'S/ ',
-                          helperText: 'por $_unidad',
+                          labelText: L.of(context).campoMeCuesta,
+                          prefixText: '${Config.simboloMoneda} ',
+                          helperText: L.of(context).porUnidadHelper(_unidad),
                         ),
                       ),
                     ),
@@ -353,20 +373,22 @@ class _EditorInsumoState extends ConsumerState<_EditorInsumo> {
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
                 decoration: InputDecoration(
-                  labelText: 'Avisarme cuando baje de',
+                  labelText: L.of(context).avisarmeCuandoBajeDe,
                   suffixText: _unidad,
-                  helperText: 'Déjalo vacío si no quieres aviso',
+                  helperText: L.of(context).sinAvisoHelper,
                 ),
               ),
               const SizedBox(height: 20),
               FilledButton(
                 onPressed: _guardando ? null : _guardar,
-                child: Text(_esNuevo ? 'Agregar' : 'Guardar'),
+                child: Text(_esNuevo
+                    ? L.of(context).agregar
+                    : L.of(context).guardar),
               ),
               if (!_esNuevo)
                 TextButton(
                   onPressed: _guardando ? null : _darDeBaja,
-                  child: const Text('Dar de baja'),
+                  child: Text(L.of(context).darDeBaja),
                 ),
             ],
           ),
@@ -436,7 +458,7 @@ class _CompraInsumoState extends ConsumerState<_CompraInsumo> {
   Future<void> _guardar() async {
     final insumo = widget.insumo;
     if (_enUnidadBase <= 0) {
-      mostrarAviso(context, 'Indica cuánto entró');
+      mostrarAviso(context, L.of(context).indicaCuantoEntro);
       return;
     }
     setState(() => _guardando = true);
@@ -454,7 +476,7 @@ class _CompraInsumoState extends ConsumerState<_CompraInsumo> {
       if (!mounted) return;
       refrescarTodo(ref);
       Navigator.of(context).pop();
-      mostrarAviso(context, 'Compra registrada');
+      mostrarAviso(context, L.of(context).compraRegistrada);
     } catch (e) {
       if (mounted) mostrarError(context, e);
     } finally {
@@ -479,7 +501,7 @@ class _CompraInsumoState extends ConsumerState<_CompraInsumo> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('Comprar ${insumo.nombreCompleto}',
+            Text(L.of(context).comprarInsumo(insumo.nombreCompleto),
                 style: t.textTheme.titleLarge),
             const SizedBox(height: 16),
             if (insumo.sePorPresentacion)
@@ -487,9 +509,13 @@ class _CompraInsumoState extends ConsumerState<_CompraInsumo> {
                 segments: [
                   ButtonSegment(
                     value: true,
-                    label: Text('Por ${insumo.nombrePresentacion}'),
+                    label: Text(L.of(context)
+                        .porPresentacion(insumo.nombrePresentacion)),
                   ),
-                  ButtonSegment(value: false, label: Text('Por ${insumo.unidad}')),
+                  ButtonSegment(
+                      value: false,
+                      label:
+                          Text(L.of(context).porPresentacion(insumo.unidad))),
                 ],
                 selected: {_porPresentacion},
                 onSelectionChanged: (s) =>
@@ -501,10 +527,12 @@ class _CompraInsumoState extends ConsumerState<_CompraInsumo> {
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
               decoration: InputDecoration(
                 labelText: _porPresentacion
-                    ? '¿Cuántos ${insumo.nombrePresentacion}s?'
-                    : '¿Cuántos ${insumo.unidad}?',
+                    ? L.of(context)
+                        .cuantasPresentaciones(insumo.nombrePresentacion)
+                    : L.of(context).cuantasUnidades(insumo.unidad),
                 helperText: _porPresentacion && _enUnidadBase > 0
-                    ? '= ${Formato.cantidad(_enUnidadBase)} ${insumo.unidad}'
+                    ? L.of(context).igualAUnidadBase(
+                        Formato.cantidad(_enUnidadBase), insumo.unidad)
                     : null,
               ),
             ),
@@ -513,9 +541,9 @@ class _CompraInsumoState extends ConsumerState<_CompraInsumo> {
               controller: _monto,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
               onChanged: (_) => setState(() {}),
-              decoration: const InputDecoration(
-                labelText: 'Cuánto pagaste en total',
-                prefixText: 'S/ ',
+              decoration: InputDecoration(
+                labelText: L.of(context).cuantoPagasteTotal,
+                prefixText: '${Config.simboloMoneda} ',
               ),
             ),
             const SizedBox(height: 16),
@@ -529,13 +557,17 @@ class _CompraInsumoState extends ConsumerState<_CompraInsumo> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Stock: ${Formato.cantidad(insumo.stock)} → '
-                    '${Formato.cantidad(insumo.stock + _enUnidadBase)} ${insumo.unidad}',
+                    L.of(context).stockInsumoQueda(
+                        Formato.cantidad(insumo.stock),
+                        Formato.cantidad(insumo.stock + _enUnidadBase),
+                        insumo.unidad),
                     style: const TextStyle(fontWeight: FontWeight.w600),
                   ),
                   Text(
-                    'El ${insumo.unidad} pasa de ${Formato.soles(insumo.costoUnitario)} '
-                    'a ${Formato.soles(nuevoCosto)}',
+                    L.of(context).costoUnitarioPasaDe(
+                        insumo.unidad,
+                        Formato.soles(insumo.costoUnitario),
+                        Formato.soles(nuevoCosto)),
                     style: t.textTheme.bodySmall,
                   ),
                 ],
@@ -544,7 +576,7 @@ class _CompraInsumoState extends ConsumerState<_CompraInsumo> {
             const SizedBox(height: 20),
             FilledButton(
               onPressed: _guardando ? null : _guardar,
-              child: const Text('Registrar compra'),
+              child: Text(L.of(context).registrarCompra),
             ),
           ],
         ),

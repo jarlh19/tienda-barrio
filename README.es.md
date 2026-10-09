@@ -71,12 +71,13 @@ lib/
   datos/
     modelos/   Producto, Pedido, CuentaFiado, ...
     repos/     interfaces + implementación Supabase + implementación en memoria
-  estado/      providers de Riverpod, carrito y checkout
+  estado/      providers de Riverpod, carrito, checkout y preferencias
+  l10n/        app_es.arb, app_en.arb (y ahí queda el código generado)
   ui/
     auth/      acceso y registro
     cliente/   catálogo, carrito, pago, mis pedidos, mi fiado
     tendero/   pedidos, inventario, insumos, recetas, escáner, caja, fiado
-    comun/     perfil y widgets compartidos
+    comun/     perfil, widgets compartidos y etiquetas del dominio
 supabase/schema.sql
 tool/icono.py
 ```
@@ -178,6 +179,30 @@ por qué (ADR-0005).
 El botón aparece en cuanto hay ID de cliente, también en modo demo. Ahí está
 simulado: entra como el vecino de ejemplo sin pedirle cuenta a nadie, que es lo
 único que se puede hacer sin backend.
+
+## Idioma y apariencia
+
+La app está en **español e inglés**, y en **claro y oscuro**. Las dos cosas
+siguen al celular por defecto y las dos se pueden cambiar a mano en **Perfil**;
+la elección se recuerda.
+
+Las traducciones están en `lib/l10n/app_es.arb` y `app_en.arb`. El español es
+la plantilla: es el idioma de la tienda y el del código, y es el que sale si a
+una traducción le falta una clave. El `app_localizations.dart` lo genera
+`flutter gen-l10n`, que `flutter pub get` corre solo.
+
+Dos reglas evitan que esto se desparrame:
+
+- **Las etiquetas no son del dominio.** `EstadoPedido.listo` significa lo mismo
+  en cualquier idioma; "Listo para entregar" es solo una forma de decirlo. Las
+  extensiones `texto(L)` viven en `ui/comun/etiquetas.dart`.
+- **Los errores viajan como clave.** `ErrorApp` lleva un `Aviso` y la pantalla
+  lo traduce. Lo que viene del servidor no lleva `Aviso` y se enseña tal cual:
+  traducirlo sería adivinar.
+
+Lo que **no** se traduce son los datos de la tienda: los productos, las
+categorías y las unidades quedan en el idioma en que los escribió el tendero.
+Está en el ADR-0006.
 
 ## Ficha del producto
 
@@ -327,6 +352,7 @@ Las decisiones que costaría revertir están en `docs/decisions/`:
 | [0003](docs/decisions/0003-el-pedido-que-llega-del-celular-no-es-confiable.md) | El pedido que llega del celular no es confiable |
 | [0004](docs/decisions/0004-costo-promedio-ponderado-de-insumos.md) | El costo del insumo es promedio ponderado |
 | [0005](docs/decisions/0005-entrar-con-google-y-el-correo-de-respaldo.md) | Entrar con Google, y el correo de respaldo |
+| [0006](docs/decisions/0006-el-idioma-y-el-tema-los-elige-quien-mira.md) | El idioma y el tema los elige quien mira |
 
 ## Pendientes conocidos
 

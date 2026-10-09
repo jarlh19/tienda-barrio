@@ -5,9 +5,47 @@ import '../modelos/modelos.dart';
 /// Contratos de datos. La app solo conoce estas interfaces; detrás puede estar
 /// Supabase (producción) o el almacén en memoria (modo demo).
 
+/// Avisos que nacen dentro de la app.
+///
+/// Van como clave y no como texto porque aquí abajo no se sabe en qué idioma
+/// está mirando el usuario: quien los muestra en pantalla es quien los
+/// traduce. Lo que llega del servidor no entra en esta lista; ese texto se
+/// enseña tal cual, en el idioma en que venga.
+enum Aviso {
+  pedidoNoExiste,
+  clienteNoEncontrado,
+  indicaUnidades,
+  insumoNoExiste,
+
+  /// Datos: `insumo`, `quedan`, `unidad`, `necesitas`.
+  insumoInsuficiente,
+  sinConexion,
+  operacionFallida,
+  perfilNoCreado,
+  credencialesInvalidas,
+  confirmaCorreo,
+
+  /// Datos: `metodo` (un [MetodoPago]).
+  faltaCodigoOperacion,
+  tarjetaNoHabilitada,
+  sesionRequerida,
+  carritoVacio,
+  faltaDireccion,
+
+  /// Datos: `disponible`, `limite`.
+  cupoInsuficiente,
+}
+
 class ErrorApp implements Exception {
-  ErrorApp(this.mensaje);
+  /// [mensaje] es lo que se enseña cuando no hay [aviso]: el texto que vino del
+  /// servidor. Con [aviso], la pantalla lo traduce y [mensaje] queda de
+  /// respaldo y para los registros.
+  ErrorApp(this.mensaje, {this.aviso, this.datos = const {}});
+
   final String mensaje;
+  final Aviso? aviso;
+  final Map<String, Object?> datos;
+
   @override
   String toString() => mensaje;
 }

@@ -7,6 +7,8 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../datos/modelos/modelos.dart';
 import '../../estado/providers.dart';
+import '../../l10n/app_localizations.dart';
+import '../comun/etiquetas.dart';
 import '../comun/widgets.dart';
 
 /// Datos de cobro de la tienda. Aquí el tendero pone su número y sube el QR
@@ -19,7 +21,7 @@ class TiendaPantalla extends ConsumerWidget {
     final tienda = ref.watch(tiendaProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Cómo me pagan')),
+      appBar: AppBar(title: Text(L.of(context).comoMePagan)),
       body: AsyncVista(
         valor: tienda,
         alReintentar: () => ref.invalidate(tiendaProvider),
@@ -88,7 +90,8 @@ class _FormularioState extends ConsumerState<_Formulario> {
       if (!mounted) return;
       setState(() => _tienda = guardada);
       ref.invalidate(tiendaProvider);
-      mostrarAviso(context, 'QR de ${metodo.etiqueta} actualizado');
+      mostrarAviso(
+          context, L.of(context).qrActualizado(metodo.texto(L.of(context))));
     } catch (e) {
       if (mounted) mostrarError(context, e);
     } finally {
@@ -100,7 +103,7 @@ class _FormularioState extends ConsumerState<_Formulario> {
     final actualizada = metodo == MetodoPago.plin
         ? _tienda.copiar(qrPlinUrl: '')
         : _tienda.copiar(qrYapeUrl: '');
-    await _persistir(actualizada, 'QR quitado');
+    await _persistir(actualizada, L.of(context).qrQuitado);
   }
 
   Future<void> _guardarNumeros() => _persistir(
@@ -108,7 +111,7 @@ class _FormularioState extends ConsumerState<_Formulario> {
           numeroYape: _yape.text.trim(),
           numeroPlin: _plin.text.trim(),
         ),
-        'Datos guardados',
+        L.of(context).perfilDatosGuardados,
       );
 
   Future<void> _persistir(Tienda tienda, String aviso) async {
@@ -133,8 +136,7 @@ class _FormularioState extends ConsumerState<_Formulario> {
       padding: const EdgeInsets.all(16),
       children: [
         Text(
-          'Esto es lo que ve el cliente cuando elige pagar con Yape o Plin. '
-          'Si no pones número ni QR, el método no se le ofrece.',
+          L.of(context).tiendaExplicacion,
           style: t.textTheme.bodyMedium
               ?.copyWith(color: t.colorScheme.onSurfaceVariant),
         ),
@@ -159,7 +161,7 @@ class _FormularioState extends ConsumerState<_Formulario> {
         const SizedBox(height: 24),
         FilledButton(
           onPressed: _guardando ? null : _guardarNumeros,
-          child: const Text('Guardar números'),
+          child: Text(L.of(context).guardarNumeros),
         ),
       ],
     );
@@ -192,14 +194,14 @@ class _BloqueMetodo extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(metodo.etiqueta, style: t.textTheme.titleMedium),
+            Text(metodo.texto(L.of(context)), style: t.textTheme.titleMedium),
             const SizedBox(height: 12),
             TextField(
               controller: controlador,
               keyboardType: TextInputType.phone,
-              decoration: const InputDecoration(
-                labelText: 'Número',
-                prefixIcon: Icon(Icons.phone_android),
+              decoration: InputDecoration(
+                labelText: L.of(context).campoNumero,
+                prefixIcon: const Icon(Icons.phone_android),
               ),
             ),
             const SizedBox(height: 16),
@@ -223,12 +225,12 @@ class _BloqueMetodo extends StatelessWidget {
                       TextButton.icon(
                         onPressed: ocupado ? null : alSubir,
                         icon: const Icon(Icons.sync),
-                        label: const Text('Cambiar'),
+                        label: Text(L.of(context).cambiar),
                       ),
                       TextButton.icon(
                         onPressed: ocupado ? null : alQuitar,
                         icon: const Icon(Icons.delete_outline),
-                        label: const Text('Quitar'),
+                        label: Text(L.of(context).quitar),
                       ),
                     ],
                   ),
@@ -261,7 +263,7 @@ class _SinQr extends StatelessWidget {
           Icon(Icons.qr_code_2, size: 48, color: t.colorScheme.outline),
           const SizedBox(height: 8),
           Text(
-            'Todavía no subes tu QR',
+            L.of(context).sinQr,
             style: t.textTheme.bodyMedium
                 ?.copyWith(color: t.colorScheme.onSurfaceVariant),
           ),
@@ -269,7 +271,7 @@ class _SinQr extends StatelessWidget {
           FilledButton.tonalIcon(
             onPressed: ocupado ? null : alSubir,
             icon: const Icon(Icons.upload_outlined),
-            label: const Text('Subir imagen del QR'),
+            label: Text(L.of(context).subirQr),
           ),
         ],
       ),
@@ -305,7 +307,7 @@ class VistaQr extends StatelessWidget {
       ),
       errorWidget: (_, _, _) => SizedBox(
         height: alto,
-        child: const Center(child: Text('No se pudo cargar el QR')),
+        child: Center(child: Text(L.of(context).qrNoCarga)),
       ),
     );
   }
