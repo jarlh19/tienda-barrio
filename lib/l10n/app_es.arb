@@ -22,6 +22,7 @@
       }
     }
   },
+  "avisoDemasiadosPedidos": "Ya tienes 3 pedidos en curso. Espera a que la tienda entregue uno antes de pedir otro.",
   "avisoFaltaCodigoOperacion": "Ingresa el código de operación de tu {metodo}.",
   "@avisoFaltaCodigoOperacion": {
     "placeholders": {

@@ -103,6 +103,7 @@ String textoDeError(L l, Object error, {String? generico}) {
     Aviso.sesionRequerida => l.avisoSesionRequerida,
     Aviso.carritoVacio => l.avisoCarritoVacio,
     Aviso.faltaDireccion => l.avisoFaltaDireccion,
+    Aviso.demasiadosPedidos => l.avisoDemasiadosPedidos,
     Aviso.cupoInsuficiente => l.avisoCupoInsuficiente(
         Formato.soles(d['disponible'] as num? ?? 0),
         Formato.soles(d['limite'] as num? ?? 0),

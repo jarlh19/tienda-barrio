@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tienda_barrio/datos/modelos/modelos.dart';
 import 'package:tienda_barrio/datos/repos/memoria.dart';
+import 'package:tienda_barrio/datos/repos/repos.dart';
 import 'package:tienda_barrio/estado/carrito.dart';
 import 'package:tienda_barrio/estado/checkout.dart';
 import 'package:tienda_barrio/estado/providers.dart';
@@ -89,6 +90,46 @@ void main() {
     );
 
     almacen.limites[cliente.id] = 150;
+  });
+
+  test('un cliente no puede tener más de 3 pedidos en curso', () async {
+    // Cada pedido descuenta stock al entrar: sin tope, pedidos falsos
+    // vaciarían la tienda.
+    final cliente = contenedor.read(sesionProvider)!;
+    bool enCurso(Pedido p) =>
+        p.clienteId == cliente.id &&
+        p.estado != EstadoPedido.entregado &&
+        p.estado != EstadoPedido.cancelado;
+    final creados = <Pedido>[];
+    Future<Pedido> pedir() {
+      contenedor.read(carritoProvider.notifier).agregar(panDemo());
+      return contenedor.read(checkoutProvider).confirmar(
+            metodo: MetodoPago.efectivo,
+            direccion: 'Jr. Las Flores 45',
+          );
+    }
+
+    while (almacen.pedidos.where(enCurso).length < 3) {
+      creados.add(await pedir());
+    }
+    await expectLater(
+      pedir(),
+      throwsA(isA<ErrorApp>()
+          .having((e) => e.aviso, 'aviso', Aviso.demasiadosPedidos)),
+    );
+    contenedor.read(carritoProvider.notifier).limpiar();
+
+    // Cuando la tienda entrega uno, se puede volver a pedir.
+    final repo = contenedor.read(pedidosRepoProvider);
+    final entregado = almacen.pedidos.firstWhere(enCurso);
+    await repo.cambiarEstado(entregado.id, EstadoPedido.entregado);
+    creados.add(await pedir());
+
+    for (final p in creados) {
+      if (enCurso(almacen.pedidos.firstWhere((x) => x.id == p.id))) {
+        await repo.cambiarEstado(p.id, EstadoPedido.cancelado);
+      }
+    }
   });
 
   test('un pedido sin dirección no se guarda', () async {

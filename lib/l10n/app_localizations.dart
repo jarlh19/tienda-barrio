@@ -169,6 +169,12 @@ abstract class L {
   /// **'Tu cupo de fiado no alcanza. Disponible: {disponible} de {limite}.'**
   String avisoCupoInsuficiente(String disponible, String limite);
 
+  /// No description provided for @avisoDemasiadosPedidos.
+  ///
+  /// In es, this message translates to:
+  /// **'Ya tienes 3 pedidos en curso. Espera a que la tienda entregue uno antes de pedir otro.'**
+  String get avisoDemasiadosPedidos;
+
   /// No description provided for @avisoFaltaCodigoOperacion.
   ///
   /// In es, this message translates to:

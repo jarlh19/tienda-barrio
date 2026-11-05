@@ -34,6 +34,7 @@ enum Aviso {
 
   /// Datos: `disponible`, `limite`.
   cupoInsuficiente,
+  demasiadosPedidos,
 }
 
 class ErrorApp implements Exception {

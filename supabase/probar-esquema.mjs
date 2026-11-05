@@ -124,6 +124,23 @@ await como(ANA)
 const otro = await pedir('fiado', 1)
 ok(otro instanceof Error && /cupo/.test(otro.message), 'y no pasa del cupo de 100')
 
+// Cada pedido descuenta stock al entrar: un cliente no puede tener más de 3
+// en curso, o con pedidos falsos vaciaría la tienda.
+await editor()
+await db.query(`update productos set stock = 100 where id = $1`, [pan])
+await db.query(`update pedidos set estado = 'entregado' where cliente_id = $1`, [ANA])
+for (let i = 0; i < 3; i++) { await como(ANA); await pedir('efectivo', 1) }
+await como(ANA)
+const cuarto = await pedir('efectivo', 1)
+ok(cuarto instanceof Error && /3 pedidos en curso/.test(cuarto.message),
+  `el cuarto pedido en curso se rechaza (${cuarto.message ?? 'pasó'})`)
+await editor()
+await db.query(`update pedidos set estado = 'entregado'
+  where id = (select id from pedidos where cliente_id = $1 and estado = 'pendiente' limit 1)`, [ANA])
+await como(ANA)
+const otraVez = await pedir('efectivo', 1)
+ok(Array.isArray(otraVez), `cuando la tienda entrega uno, se puede volver a pedir (${otraVez.message ?? 'ok'})`)
+
 console.log('\n— Funciones —')
 await editor()
 const puede = async (rol, firma) => (await db.query(`select has_function_privilege($1, $2, 'execute') p`, [rol, firma])).rows[0].p

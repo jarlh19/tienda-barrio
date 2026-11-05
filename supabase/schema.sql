@@ -174,6 +174,14 @@ declare
   deuda     numeric;
   total     numeric := 0;
 begin
+  -- Cada pedido descuenta stock al entrar: sin tope, pedidos falsos vaciarían
+  -- la tienda. La app en modo demo aplica el mismo tope (MemPedidosRepo).
+  if (select count(*) from public.pedidos
+       where cliente_id = new.cliente_id
+         and estado in ('pendiente','confirmado','preparando','listo')) >= 3 then
+    raise exception 'Ya tienes 3 pedidos en curso. Espera a que la tienda entregue uno antes de pedir otro.';
+  end if;
+
   -- El nombre sale del perfil, no del payload.
   select coalesce(nombre, '') into new.cliente_nombre
     from public.perfiles where id = new.cliente_id;

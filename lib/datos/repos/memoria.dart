@@ -537,8 +537,22 @@ class MemPedidosRepo implements PedidosRepo {
 
   final AlmacenMemoria _a;
 
+  /// Igual que el trigger en Supabase: cada pedido descuenta stock al
+  /// entrar, así que un cliente no puede tener más de 3 en curso.
+  static const maximoEnCurso = 3;
+
   @override
   Future<Pedido> crear(Pedido pedido) async {
+    final enCurso = _a.pedidos.where((p) =>
+        p.clienteId == pedido.clienteId &&
+        p.estado != EstadoPedido.entregado &&
+        p.estado != EstadoPedido.cancelado);
+    if (enCurso.length >= maximoEnCurso) {
+      throw ErrorApp(
+        'Ya tienes 3 pedidos en curso. Espera a que la tienda entregue uno antes de pedir otro.',
+        aviso: Aviso.demasiadosPedidos,
+      );
+    }
     final nuevo = pedido.id.isEmpty
         ? Pedido(
             id: _id(),

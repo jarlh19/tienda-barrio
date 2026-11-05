@@ -12,6 +12,7 @@
   "avisoConfirmaCorreo": "Check your email to confirm the account.",
   "avisoCredencialesInvalidas": "Wrong email or password.",
   "avisoCupoInsuficiente": "Your store credit is not enough. Available: {disponible} of {limite}.",
+  "avisoDemasiadosPedidos": "You already have 3 orders in progress. Wait until the store delivers one before ordering again.",
   "avisoFaltaCodigoOperacion": "Enter the operation code from your {metodo}.",
   "avisoFaltaDireccion": "Tell us where to deliver the order.",
   "avisoIndicaUnidades": "Enter how many units came out.",

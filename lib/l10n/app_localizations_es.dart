@@ -48,6 +48,10 @@ class LEs extends L {
   }
 
   @override
+  String get avisoDemasiadosPedidos =>
+      'Ya tienes 3 pedidos en curso. Espera a que la tienda entregue uno antes de pedir otro.';
+
+  @override
   String avisoFaltaCodigoOperacion(String metodo) {
     return 'Ingresa el código de operación de tu $metodo.';
   }
