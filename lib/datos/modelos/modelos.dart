@@ -369,6 +369,16 @@ class Pedido {
   String get codigo =>
       id.length <= 6 ? id.toUpperCase() : id.substring(0, 6).toUpperCase();
 
+  /// Un Yape o un Plin que nadie verificó en este tiempo deja el stock
+  /// apartado: el panel lo resalta para que el tendero lo confirme o cancele.
+  /// Nada se cancela solo.
+  static const esperaMaximaDePago = Duration(hours: 2);
+
+  bool pagoAtrasado(DateTime ahora) =>
+      estado.abierto &&
+      estadoPago == EstadoPago.verificando &&
+      ahora.difference(creadoEn) > esperaMaximaDePago;
+
   factory Pedido.desdeJson(Map<String, dynamic> j) => Pedido(
         id: j['id'] as String,
         clienteId: j['cliente_id'] as String,
@@ -1134,3 +1144,11 @@ class ResultadoProduccion {
 
 String _sinCeros(double v) =>
     v == v.roundToDouble() ? v.toStringAsFixed(0) : v.toStringAsFixed(2);
+
+/// Los pedidos como los ve el tendero: primero los pagos atrasados, del más
+/// viejo al más nuevo; el resto en el orden en que llegaron.
+List<Pedido> ordenarParaTendero(List<Pedido> pedidos, DateTime ahora) {
+  final atrasados = pedidos.where((p) => p.pagoAtrasado(ahora)).toList()
+    ..sort((a, b) => a.creadoEn.compareTo(b.creadoEn));
+  return [...atrasados, ...pedidos.where((p) => !p.pagoAtrasado(ahora))];
+}

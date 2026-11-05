@@ -800,6 +800,11 @@ class LEs extends L {
   String get pagarTitulo => 'Pagar';
 
   @override
+  String pagoAtrasado(int horas) {
+    return 'Esperando el pago hace $horas h. Si no llegó, cancela el pedido para devolver el stock.';
+  }
+
+  @override
   String get pagoNoLlego => 'No llegó';
 
   @override

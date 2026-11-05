@@ -544,6 +544,14 @@
     }
   },
   "pagarTitulo": "Pagar",
+  "pagoAtrasado": "Esperando el pago hace {horas} h. Si no llegó, cancela el pedido para devolver el stock.",
+  "@pagoAtrasado": {
+    "placeholders": {
+      "horas": {
+        "type": "int"
+      }
+    }
+  },
   "pagoNoLlego": "No llegó",
   "pagoRecibido": "Pago recibido",
   "pedidoEnviadoDetalle": "Tu pedido {codigo} por {total} llegó a la tienda.\n\n{estadoPago}.",

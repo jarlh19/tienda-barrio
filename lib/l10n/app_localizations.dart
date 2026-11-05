@@ -1488,6 +1488,12 @@ abstract class L {
   /// **'Pagar'**
   String get pagarTitulo;
 
+  /// No description provided for @pagoAtrasado.
+  ///
+  /// In es, this message translates to:
+  /// **'Esperando el pago hace {horas} h. Si no llegó, cancela el pedido para devolver el stock.'**
+  String pagoAtrasado(int horas);
+
   /// No description provided for @pagoNoLlego.
   ///
   /// In es, this message translates to:

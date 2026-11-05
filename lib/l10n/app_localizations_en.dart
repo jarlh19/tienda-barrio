@@ -798,6 +798,11 @@ class LEn extends L {
   String get pagarTitulo => 'Checkout';
 
   @override
+  String pagoAtrasado(int horas) {
+    return 'Waiting for payment for $horas h. If it never arrived, cancel the order to return the stock.';
+  }
+
+  @override
   String get pagoNoLlego => 'Never arrived';
 
   @override

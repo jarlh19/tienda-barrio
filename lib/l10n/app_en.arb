@@ -231,6 +231,7 @@
   "operacionSufijo": " · op. {referencia}",
   "pagaConMetodo": "Pay {total} with {metodo}",
   "pagarTitulo": "Checkout",
+  "pagoAtrasado": "Waiting for payment for {horas} h. If it never arrived, cancel the order to return the stock.",
   "pagoNoLlego": "Never arrived",
   "pagoRecibido": "Payment received",
   "pedidoEnviadoDetalle": "Your order {codigo} for {total} reached the store.\n\n{estadoPago}.",

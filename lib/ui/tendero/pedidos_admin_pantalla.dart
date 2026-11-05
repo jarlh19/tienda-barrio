@@ -53,8 +53,10 @@ class _PedidosAdminPantallaState extends ConsumerState<PedidosAdminPantalla> {
         valor: pedidos,
         alReintentar: () => ref.invalidate(pedidosTiendaProvider),
         constructor: (todos) {
-          final lista =
-              _soloAbiertos ? todos.where((p) => p.estado.abierto).toList() : todos;
+          final lista = ordenarParaTendero(
+            _soloAbiertos ? todos.where((p) => p.estado.abierto).toList() : todos,
+            DateTime.now(),
+          );
           if (lista.isEmpty) {
             return EstadoVacio(
               icono: Icons.inbox_outlined,
@@ -116,6 +118,8 @@ class _Acciones extends StatelessWidget {
   Widget build(BuildContext context) {
     final siguiente = pedido.estado.siguiente;
     final porVerificar = pedido.estadoPago == EstadoPago.verificando;
+    final ahora = DateTime.now();
+    final atrasado = pedido.pagoAtrasado(ahora);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -144,6 +148,28 @@ class _Acciones extends StatelessWidget {
                     color: Theme.of(context).colorScheme.onTertiaryContainer,
                   ),
                 ),
+                if (atrasado) ...[
+                  const SizedBox(height: 6),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.schedule,
+                          size: 16, color: Theme.of(context).colorScheme.error),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          L.of(context).pagoAtrasado(
+                              ahora.difference(pedido.creadoEn).inHours),
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: Theme.of(context).colorScheme.error,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
                 const SizedBox(height: 6),
                 Row(
                   children: [
