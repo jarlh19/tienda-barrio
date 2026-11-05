@@ -46,6 +46,14 @@ flutter analyze
 flutter test
 ```
 
+El esquema de la base tiene su propia prueba, contra un Postgres en memoria
+(PGlite), sin proyecto de Supabase ni Docker: quién cambia qué en `perfiles`,
+el total de los pedidos, el cupo de fiado y qué funciones se llaman por la API.
+
+```bash
+cd supabase && npm install && npm run probar
+```
+
 ## Conectar Supabase
 
 1. Crear un proyecto en [supabase.com](https://supabase.com) (el plan gratis alcanza de sobra).

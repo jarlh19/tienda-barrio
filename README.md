@@ -50,6 +50,15 @@ flutter test
 54 tests cover the cart, stock ledger and cash, ingredient costing, store
 credit, payment methods, barcode intake and sign-in.
 
+The database schema has its own check, against an in-memory Postgres
+(PGlite), with no Supabase project or Docker needed: who can change what in
+`perfiles`, order totals, the store credit limit and which functions the API
+can call.
+
+```bash
+cd supabase && npm install && npm run probar
+```
+
 ## Connecting Supabase
 
 1. Create a project at [supabase.com](https://supabase.com) (the free plan is

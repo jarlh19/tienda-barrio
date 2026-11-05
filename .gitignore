@@ -43,3 +43,6 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Prueba del esquema (supabase/probar-esquema.mjs)
+supabase/node_modules/

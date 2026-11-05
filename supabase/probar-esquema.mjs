@@ -1,0 +1,153 @@
+/* Prueba schema.sql contra un Postgres de verdad, en memoria (PGlite), antes
+   de correrlo en Supabase. Imita lo mínimo de Supabase que el esquema usa
+   (roles, privilegios por defecto, auth.uid, storage, realtime) y prueba lo
+   que un usuario podría hacer con la API: quién cambia qué en perfiles, el
+   fiado con su cupo y qué funciones se pueden llamar.
+   Se corre con `npm run probar` desde esta carpeta. */
+import { PGlite } from '@electric-sql/pglite'
+import { readFileSync } from 'node:fs'
+
+const db = new PGlite()
+// Lo mínimo de Supabase: roles, privilegios por defecto del esquema public
+// (en Supabase todo lo nuevo nace con permisos para anon y authenticated) y
+// los esquemas auth y storage.
+await db.exec(`
+  create role anon nologin; create role authenticated nologin; create role service_role nologin bypassrls;
+  grant usage on schema public to anon, authenticated, service_role;
+  alter default privileges in schema public grant all on tables to anon, authenticated, service_role;
+  alter default privileges in schema public grant all on functions to anon, authenticated, service_role;
+  alter default privileges in schema public grant all on sequences to anon, authenticated, service_role;
+  create schema auth; create schema storage;
+  grant usage on schema auth, storage to anon, authenticated;
+  create table auth.users (id uuid primary key, email text, raw_user_meta_data jsonb default '{}');
+  create function auth.uid() returns uuid language sql stable as $$
+    select (nullif(current_setting('request.jwt.claims', true), '')::json ->> 'sub')::uuid $$;
+  grant execute on function auth.uid() to anon, authenticated;
+  create table storage.buckets (id text primary key, name text, public boolean);
+  create table storage.objects (id serial primary key, bucket_id text, name text);
+  alter table storage.objects enable row level security;
+  grant all on storage.objects to anon, authenticated;
+  create publication supabase_realtime;
+`)
+await db.exec(readFileSync(new URL('schema.sql', import.meta.url), 'utf8'))
+
+const DUENO = '00000000-0000-0000-0000-00000000000a'
+const ANA = '00000000-0000-0000-0000-00000000000b'
+const BETO = '00000000-0000-0000-0000-00000000000c'
+await db.exec(`insert into auth.users (id, email, raw_user_meta_data) values
+  ('${DUENO}', 'dueno@tienda.pe', '{"nombre":"Dueño"}'),
+  ('${ANA}', 'ana@x.pe', '{"nombre":"Ana"}'),
+  ('${BETO}', 'beto@x.pe', '{"nombre":"Beto"}')`)
+
+// Como llega un pedido por la API: con el rol y el token del usuario.
+const como = async (uid, rol = 'authenticated') => {
+  await db.query('reset role')
+  await db.query(`select set_config('request.jwt.claims', $1, false)`, [uid ? JSON.stringify({ sub: uid, role: rol }) : ''])
+  await db.query(`set role ${rol}`)
+}
+const editor = async () => { await db.query('reset role'); await db.query(`select set_config('request.jwt.claims', '', false)`) }
+const intenta = async (sql, params) => { try { return (await db.query(sql, params)).rows } catch (e) { return e } }
+const perfil = async (id) => { await editor(); return (await db.query('select * from perfiles where id = $1', [id])).rows[0] }
+
+let fallos = 0
+const ok = (cond, msg) => { console.log((cond ? '  ok  ' : ' FALLA ') + msg); if (!cond) fallos++ }
+
+console.log('— Perfiles —')
+ok((await db.query('select count(*)::int n from perfiles')).rows[0].n === 3, 'el registro crea un perfil por usuario, como cliente')
+
+await editor()
+await db.query(`update perfiles set rol = 'tendero' where id = $1`, [DUENO])
+ok((await perfil(DUENO)).rol === 'tendero', 'desde el editor SQL se asciende al dueño a tendero')
+
+await como(ANA)
+const propia = await intenta(`update perfiles set nombre = 'Ana P.', telefono = '999', direccion = 'Jr. Uno' where id = $1 returning nombre`, [ANA])
+ok(Array.isArray(propia) && propia[0]?.nombre === 'Ana P.', 'el cliente edita su nombre, teléfono y dirección')
+
+await como(ANA)
+await intenta(`update perfiles set rol = 'tendero' where id = $1`, [ANA])
+ok((await perfil(ANA)).rol === 'cliente', 'el cliente no puede ponerse rol de tendero')
+
+await como(ANA)
+await intenta(`update perfiles set limite_fiado = 99999 where id = $1`, [ANA])
+ok(Number((await perfil(ANA)).limite_fiado) === 100, 'el cliente no puede subirse el cupo de fiado')
+
+await como(ANA)
+await intenta(`update perfiles set nombre = 'otro' where id = $1`, [BETO])
+ok((await perfil(BETO)).nombre === 'Beto', 'el cliente no edita el perfil de otro')
+
+await como(DUENO)
+await intenta(`update perfiles set limite_fiado = 250 where id = $1`, [BETO])
+ok(Number((await perfil(BETO)).limite_fiado) === 250, 'el tendero cambia el cupo de un cliente')
+
+await como(DUENO)
+await intenta(`update perfiles set rol = 'tendero' where id = $1`, [BETO])
+ok((await perfil(BETO)).rol === 'cliente', 'el tendero tampoco asciende a nadie desde la app')
+
+// Segunda capa: aunque alguien vuelva a abrir el update de toda la tabla, el
+// trigger sigue frenando.
+await editor()
+await db.query('grant update on perfiles to authenticated')
+await como(ANA)
+const rolAbierto = await intenta(`update perfiles set rol = 'tendero' where id = $1`, [ANA])
+await como(ANA)
+const cupoAbierto = await intenta(`update perfiles set limite_fiado = 99999 where id = $1`, [ANA])
+ok(/editor SQL/.test(rolAbierto.message) && /Solo el tendero/.test(cupoAbierto.message),
+  'con el permiso abierto, el trigger igual frena rol y cupo')
+await editor()
+await db.query('revoke update on perfiles from authenticated')
+await db.query('grant update (nombre, telefono, direccion, limite_fiado) on perfiles to authenticated')
+
+await como(null, 'anon')
+const anonimo = await intenta('select count(*)::int n from perfiles')
+ok(Array.isArray(anonimo) && anonimo[0].n === 0, 'sin sesión no se ve ningún perfil')
+
+console.log('\n— Pedidos y fiado —')
+await editor()
+const pan = (await db.query(`insert into productos (nombre, precio, stock) values ('Pan', 40, 10) returning id`)).rows[0].id
+// El celular manda un precio de 1 céntimo: la base tiene que ignorarlo.
+const pedir = (metodo, cantidad) => intenta(
+  `insert into pedidos (cliente_id, items, metodo_pago, total) values ($1, $2, $3, 0.01) returning total`,
+  [ANA, JSON.stringify([{ producto_id: pan, cantidad, precio_unitario: 0.01 }]), metodo])
+
+await como(ANA)
+const contado = await pedir('efectivo', 1)
+ok(Array.isArray(contado) && Number(contado[0].total) === 40,
+  `el total del pedido sale del precio de la base (dio ${contado[0]?.total ?? contado.message})`)
+
+await como(ANA)
+const fiado = await pedir('fiado', 2)
+await editor()
+const deuda = Number((await db.query('select coalesce(sum(monto), 0) d from movimientos_fiado where cliente_id = $1', [ANA])).rows[0].d)
+ok(Array.isArray(fiado) && deuda === 80, `el cliente pide al fiado dentro de su cupo y debe 80 (debe ${deuda})`)
+
+await como(ANA)
+const otro = await pedir('fiado', 1)
+ok(otro instanceof Error && /cupo/.test(otro.message), 'y no pasa del cupo de 100')
+
+console.log('\n— Funciones —')
+await editor()
+const puede = async (rol, firma) => (await db.query(`select has_function_privilege($1, $2, 'execute') p`, [rol, firma])).rows[0].p
+// Todas las funciones del esquema, no una lista: si alguien agrega una y se
+// olvida de cerrarla, esto falla.
+const funciones = (await db.query(`select p.oid::regprocedure::text firma from pg_proc p
+  join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public'`)).rows.map((f) => f.firma)
+const permitidas = {
+  anon: ['es_tendero()'],
+  authenticated: ['es_tendero()', 'registrar_produccion(uuid,text,numeric,integer,text,jsonb)'],
+}
+ok(funciones.length >= 9, `revisa las ${funciones.length} funciones del esquema`)
+for (const rol of ['anon', 'authenticated']) {
+  const abiertas = []
+  for (const f of funciones) if (await puede(rol, `public.${f}`)) abiertas.push(f)
+  ok(abiertas.sort().join() === permitidas[rol].sort().join(), `${rol} solo ejecuta ${permitidas[rol].join(' y ')} (ejecuta: ${abiertas.join(', ')})`)
+}
+await como(ANA)
+const rpc = await intenta(`select registrar_produccion($1, 'Pan', 1, 30, '', '[]')`, [pan])
+ok(rpc instanceof Error && /Solo el tendero/.test(rpc.message), 'un cliente llama a registrar_produccion y la función lo rechaza')
+await editor()
+const porDefecto = (await db.query(`select coalesce(array_agg(a::text), '{}') acl from pg_default_acl d, unnest(d.defaclacl) a
+  where d.defaclobjtype = 'f' and d.defaclnamespace = 'public'::regnamespace`)).rows[0].acl
+ok(!porDefecto.some((a) => /^(anon|authenticated)=/.test(a)), 'una función nueva ya no nace abierta para anon ni authenticated')
+
+console.log(fallos ? `\n${fallos} FALLAS` : '\nTodo en orden')
+process.exit(fallos ? 1 : 0)

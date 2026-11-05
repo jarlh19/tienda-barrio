@@ -1,6 +1,11 @@
 -- Esquema de la tienda de barrio para Supabase.
 -- Ejecutar completo en el SQL Editor del proyecto (una sola vez).
 
+-- En Supabase toda función nueva del esquema public nace ejecutable por anon
+-- y authenticated, o sea por cualquiera con la clave pública. Aquí no: las que
+-- la app llama se habilitan una por una al final de este archivo.
+alter default privileges in schema public revoke execute on functions from anon, authenticated;
+
 -- ---------------------------------------------------------------- perfiles --
 create table if not exists public.perfiles (
   id            uuid primary key references auth.users on delete cascade,
@@ -201,6 +206,9 @@ begin
   end loop;
 
   new.items := saneados;
+  -- Los triggers before corren en orden alfabético: al_guardar_pedido ya
+  -- calculó el total con los precios del celular. Se rehace aquí.
+  new.total := total;
 
   -- El estado de pago lo decide el metodo, nunca el cliente.
   new.estado_pago := case new.metodo_pago
@@ -597,7 +605,41 @@ create policy perfiles_leer on public.perfiles
 
 drop policy if exists perfiles_editar on public.perfiles;
 create policy perfiles_editar on public.perfiles
-  for update using (id = auth.uid() or public.es_tendero());
+  for update using (id = auth.uid() or public.es_tendero())
+  with check (id = auth.uid() or public.es_tendero());
+
+-- RLS decide qué filas, no qué columnas: sin esto un cliente podría ponerse
+-- rol de tendero o subirse el cupo con una llamada a la API. Desde la app
+-- solo se cambian estas columnas; rol se cambia en el editor SQL (ver el
+-- final de este archivo).
+revoke update on public.perfiles from anon, authenticated;
+grant update (nombre, telefono, direccion, limite_fiado) on public.perfiles to authenticated;
+
+-- Y por si alguien vuelve a abrir esos permisos: el rol no se toca desde la
+-- API y el cupo solo lo cambia el tendero. Corre con los permisos de quien
+-- llama (no es security definer) para saber si viene de la app.
+create or replace function public.proteger_perfil()
+returns trigger
+language plpgsql
+set search_path = public
+as $$
+begin
+  if current_user in ('anon', 'authenticated') then
+    if new.rol is distinct from old.rol then
+      raise exception 'El rol solo se cambia desde el editor SQL';
+    end if;
+    if new.limite_fiado is distinct from old.limite_fiado and not public.es_tendero() then
+      raise exception 'Solo el tendero cambia el cupo de fiado';
+    end if;
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists al_editar_perfil on public.perfiles;
+create trigger al_editar_perfil
+  before update on public.perfiles
+  for each row execute function public.proteger_perfil();
 
 -- Vista publica del catalogo: lo que el cliente necesita para comprar y nada
 -- mas. Deja fuera costo, margen y datos de produccion, que son informacion
@@ -709,6 +751,18 @@ create policy qr_borrar on storage.objects
 
 -- Pedidos en vivo en el panel del tendero.
 alter publication supabase_realtime add table public.pedidos;
+
+-- ------------------------------------------------------------ funciones ----
+-- Nadie llama por la API a las funciones de este archivo, salvo las de abajo.
+-- Las de los triggers no lo necesitan: Postgres revisa ese permiso al crear
+-- el trigger, no cada vez que corre. Si agregas una función que la app llama
+-- con .rpc(), dale su grant aquí.
+revoke execute on all functions in schema public from public, anon, authenticated;
+grant execute on all functions in schema public to service_role;
+-- Las políticas la evalúan con el rol de quien consulta, con o sin sesión.
+grant execute on function public.es_tendero() to anon, authenticated;
+-- Revisa por dentro que quien la llama sea el tendero.
+grant execute on function public.registrar_produccion(uuid, text, numeric, integer, text, jsonb) to authenticated;
 
 -- ------------------------------------------------------------ datos base ----
 insert into public.categorias (nombre, emoji) values

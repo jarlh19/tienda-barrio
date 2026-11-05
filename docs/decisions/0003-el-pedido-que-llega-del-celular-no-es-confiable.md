@@ -32,7 +32,9 @@ del negocio quedaba expuesto al cliente.
 1. Un trigger `sanear_pedido()` (BEFORE INSERT, `security definer`) **reescribe**
    los items desde `productos` —precio, nombre y unidad—, fija `estado_pago`
    según el método de pago, toma el nombre del perfil y valida stock y cupo de
-   fiado contra la base.
+   fiado contra la base. También fija el total: los triggers before corren en
+   orden alfabético y `al_guardar_pedido` ya lo calculó con los precios del
+   celular (se corrigió el 5-nov-2026, lo cubre `supabase/probar-esquema.mjs`).
 2. El cargo al fiado lo inserta el trigger de pedidos, no la app. En modo demo
    lo hace `MemPedidosRepo`, para que ambos caminos se comporten igual.
 3. El cliente lee el catálogo por la vista `catalogo`, que no expone `costo`,
