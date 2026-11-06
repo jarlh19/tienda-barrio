@@ -154,6 +154,18 @@ class SbAuthRepo implements AuthRepo {
   }
 
   @override
+  Future<void> borrarCuenta() async {
+    try {
+      await _c.rpc<void>('borrar_mi_cuenta');
+    } catch (e) {
+      _traducir(e);
+    }
+    // La sesión ya no existe en el servidor: solo queda olvidarla aquí.
+    await _c.auth.signOut(scope: SignOutScope.local);
+    _actual = null;
+  }
+
+  @override
   Future<Perfil> guardarPerfil(Perfil perfil) async {
     try {
       final fila = await _c

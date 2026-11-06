@@ -381,7 +381,8 @@ class Pedido {
 
   factory Pedido.desdeJson(Map<String, dynamic> j) => Pedido(
         id: j['id'] as String,
-        clienteId: j['cliente_id'] as String,
+        // Vacío si el cliente borró su cuenta: la venta queda para la tienda.
+        clienteId: j['cliente_id'] as String? ?? '',
         clienteNombre: (j['cliente_nombre'] ?? '') as String,
         items: ((j['items'] ?? []) as List)
             .map((e) => ItemPedido.desdeJson(Map<String, dynamic>.from(e as Map)))
@@ -459,7 +460,8 @@ class MovimientoFiado {
 
   factory MovimientoFiado.desdeJson(Map<String, dynamic> j) => MovimientoFiado(
         id: j['id'] as String,
-        clienteId: j['cliente_id'] as String,
+        // Vacío si el cliente borró su cuenta: la venta queda para la tienda.
+        clienteId: j['cliente_id'] as String? ?? '',
         tipo: _enumDesde(
             TipoMovimiento.values, j['tipo'] as String?, TipoMovimiento.cargo),
         monto: (j['monto'] as num).toDouble(),

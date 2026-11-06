@@ -143,7 +143,9 @@ insert into public.tienda (id) values (1) on conflict (id) do nothing;
 -- ---------------------------------------------------------------- pedidos --
 create table if not exists public.pedidos (
   id              uuid primary key default gen_random_uuid(),
-  cliente_id      uuid not null references public.perfiles on delete cascade,
+  -- Si el cliente borra su cuenta, el pedido queda como venta sin cliente
+  -- (ver borrar_mi_cuenta): el tendero no pierde sus ventas.
+  cliente_id      uuid references public.perfiles on delete set null,
   cliente_nombre  text not null default '',
   items           jsonb not null default '[]'::jsonb,
   total           numeric(10,2) not null default 0,
@@ -158,6 +160,13 @@ create table if not exists public.pedidos (
   notas           text not null default '',
   creado_en       timestamptz not null default now()
 );
+
+-- Bases creadas antes del 6 de noviembre de 2026: el pedido se borraba junto
+-- con la cuenta del cliente.
+alter table public.pedidos alter column cliente_id drop not null;
+alter table public.pedidos drop constraint if exists pedidos_cliente_id_fkey;
+alter table public.pedidos add constraint pedidos_cliente_id_fkey
+  foreign key (cliente_id) references public.perfiles on delete set null;
 
 create index if not exists pedidos_cliente_idx on public.pedidos (cliente_id, creado_en desc);
 create index if not exists pedidos_estado_idx on public.pedidos (estado);
@@ -416,13 +425,19 @@ create trigger al_mover_inventario
 -- ----------------------------------------------------------------- fiado ----
 create table if not exists public.movimientos_fiado (
   id           uuid primary key default gen_random_uuid(),
-  cliente_id   uuid not null references public.perfiles on delete cascade,
+  -- Como en pedidos: al borrarse la cuenta, el movimiento queda en la caja.
+  cliente_id   uuid references public.perfiles on delete set null,
   tipo         text not null check (tipo in ('cargo','abono')),
   monto        numeric(10,2) not null check (monto > 0),
   descripcion  text not null default '',
   pedido_id    uuid references public.pedidos on delete set null,
   fecha        timestamptz not null default now()
 );
+
+alter table public.movimientos_fiado alter column cliente_id drop not null;
+alter table public.movimientos_fiado drop constraint if exists movimientos_fiado_cliente_id_fkey;
+alter table public.movimientos_fiado add constraint movimientos_fiado_cliente_id_fkey
+  foreign key (cliente_id) references public.perfiles on delete set null;
 
 create index if not exists fiado_cliente_idx on public.movimientos_fiado (cliente_id, fecha desc);
 
@@ -783,6 +798,52 @@ create policy qr_borrar on storage.objects
 -- Pedidos en vivo en el panel del tendero.
 alter publication supabase_realtime add table public.pedidos;
 
+-- -------------------------------------------------------- borrar la cuenta --
+-- El cliente borra su cuenta desde la app (derecho de cancelación; Play Store
+-- también lo pide). Si debe fiado o tiene un pedido en curso no se borra nada:
+-- el tendero no puede perder una deuda ni quedarse con un pedido de nadie a
+-- medio entregar. Si no, sus pedidos se quedan como ventas sin nombre,
+-- dirección ni notas, y al borrar la fila de auth.users la base se lleva el
+-- perfil y deja sin cliente los pedidos y el fiado (on delete set null). La
+-- cuenta del tendero no se borra desde aquí: dejaría la tienda sin dueño.
+create or replace function public.borrar_mi_cuenta()
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  yo    uuid := auth.uid();
+  deuda numeric;
+begin
+  if yo is null then
+    raise exception 'Tu sesión venció. Vuelve a entrar.';
+  end if;
+  -- Bloquea el perfil: mientras se decide, no entra un pedido nuevo.
+  perform 1 from public.perfiles where id = yo for update;
+  if public.es_tendero() then
+    raise exception 'La cuenta del tendero no se borra desde la app.';
+  end if;
+  if exists (select 1 from public.pedidos
+              where cliente_id = yo
+                and estado in ('pendiente','confirmado','preparando','listo')) then
+    raise exception 'Tienes pedidos en curso. Espera a que la tienda los entregue o los cancele antes de borrar tu cuenta.';
+  end if;
+  select coalesce(sum(case when tipo = 'cargo' then monto else -monto end), 0)
+    into deuda
+    from public.movimientos_fiado where cliente_id = yo;
+  if deuda > 0 then
+    raise exception 'Debes S/ % de fiado. Págalo en la tienda antes de borrar tu cuenta.',
+      to_char(deuda, 'FM999999990.00');
+  end if;
+
+  update public.pedidos
+     set cliente_nombre = 'Cuenta borrada', direccion = '', notas = ''
+   where cliente_id = yo;
+  delete from auth.users where id = yo;
+end;
+$$;
+
 -- ------------------------------------------------------------ funciones ----
 -- Nadie llama por la API a las funciones de este archivo, salvo las de abajo.
 -- Las de los triggers no lo necesitan: Postgres revisa ese permiso al crear
@@ -794,6 +855,8 @@ grant execute on all functions in schema public to service_role;
 grant execute on function public.es_tendero() to anon, authenticated;
 -- Revisa por dentro que quien la llama sea el tendero.
 grant execute on function public.registrar_produccion(uuid, text, numeric, integer, text, jsonb) to authenticated;
+-- Cada uno borra solo su propia cuenta (auth.uid()), con sus reglas por dentro.
+grant execute on function public.borrar_mi_cuenta() to authenticated;
 
 -- ------------------------------------------------------------ datos base ----
 insert into public.categorias (nombre, emoji) values

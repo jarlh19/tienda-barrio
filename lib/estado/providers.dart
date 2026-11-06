@@ -101,6 +101,11 @@ class SesionNotifier extends Notifier<Perfil?> {
     await ref.read(authRepoProvider).cerrarSesion();
     state = null;
   }
+
+  Future<void> borrarCuenta() async {
+    await ref.read(authRepoProvider).borrarCuenta();
+    state = null;
+  }
 }
 
 final sesionProvider =

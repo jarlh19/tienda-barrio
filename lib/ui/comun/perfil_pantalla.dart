@@ -58,6 +58,37 @@ class _PerfilPantallaState extends ConsumerState<PerfilPantalla> {
     }
   }
 
+  Future<void> _borrarCuenta() async {
+    final l = L.of(context);
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (contexto) => AlertDialog(
+        title: Text(l.borrarCuenta),
+        content: Text(l.borrarCuentaDetalle),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(contexto, false),
+            child: Text(l.cancelar),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(contexto).colorScheme.error,
+              foregroundColor: Theme.of(contexto).colorScheme.onError,
+            ),
+            onPressed: () => Navigator.pop(contexto, true),
+            child: Text(l.borrarCuentaConfirmar),
+          ),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    try {
+      await ref.read(sesionProvider.notifier).borrarCuenta();
+    } catch (e) {
+      if (mounted) mostrarError(context, e);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final perfil = ref.watch(sesionProvider);
@@ -169,6 +200,14 @@ class _PerfilPantallaState extends ConsumerState<PerfilPantalla> {
             icon: const Icon(Icons.logout),
             label: Text(l.cerrarSesion),
           ),
+          if (perfil?.esTendero != true) ...[
+            const SizedBox(height: 8),
+            TextButton(
+              style: TextButton.styleFrom(foregroundColor: t.colorScheme.error),
+              onPressed: _borrarCuenta,
+              child: Text(l.borrarCuenta),
+            ),
+          ],
           const SizedBox(height: 32),
           Center(
             child: Text(

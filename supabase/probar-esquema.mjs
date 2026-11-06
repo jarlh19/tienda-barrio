@@ -150,7 +150,7 @@ const funciones = (await db.query(`select p.oid::regprocedure::text firma from p
   join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public'`)).rows.map((f) => f.firma)
 const permitidas = {
   anon: ['es_tendero()'],
-  authenticated: ['es_tendero()', 'registrar_produccion(uuid,text,numeric,integer,text,jsonb)'],
+  authenticated: ['borrar_mi_cuenta()', 'es_tendero()', 'registrar_produccion(uuid,text,numeric,integer,text,jsonb)'],
 }
 ok(funciones.length >= 9, `revisa las ${funciones.length} funciones del esquema`)
 for (const rol of ['anon', 'authenticated']) {
@@ -182,6 +182,61 @@ const { rows: [sr] } = await db.query(`select has_table_privilege('service_role'
 ok(sr.t && sr.f, 'service_role sigue con acceso a lo nuevo')
 await db.exec(`drop table public.tabla_nueva_de_prueba; drop sequence public.secuencia_nueva_de_prueba;
   drop function public.funcion_nueva_de_prueba()`)
+
+// Borrar la cuenta desde la app (derecho de cancelación; Play Store también lo
+// pide). Lo que es del cliente se va; las ventas y el fiado ya saldado quedan
+// en las cuentas del tendero, sin nombre. Si debe fiado o tiene un pedido en
+// curso, no se borra nada: el tendero no puede perder una deuda ni quedarse
+// con un pedido de nadie a medio entregar.
+console.log('\n— Borrar la cuenta —')
+const borrar = () => intenta('select borrar_mi_cuenta()')
+const cuenta = async (sql, params) => { await editor(); return (await db.query(sql, params)).rows[0].n }
+
+await como(DUENO)
+const delTendero = await borrar()
+ok(delTendero instanceof Error && /tendero/.test(delTendero.message), `el tendero no borra su cuenta desde la app (${delTendero.message ?? 'pasó'})`)
+
+await editor()
+await db.query(`update pedidos set direccion = 'Jr. Uno 123', notas = 'tocar el timbre' where cliente_id = $1`, [ANA])
+await como(ANA)
+const enCurso = await borrar()
+ok(enCurso instanceof Error && /pedidos en curso/.test(enCurso.message), `con un pedido en curso no se borra (${enCurso.message ?? 'pasó'})`)
+ok(await cuenta('select count(*)::int n from auth.users where id = $1', [ANA]) === 1, 'y la cuenta sigue')
+
+await editor()
+await db.query(`update pedidos set estado = 'entregado' where cliente_id = $1`, [ANA])
+await como(ANA)
+const debe = await borrar()
+ok(debe instanceof Error && /S\/ 80\.00/.test(debe.message) && /fiado/.test(debe.message),
+  `debiendo fiado no se borra, y el mensaje dice cuánto (${debe.message ?? 'pasó'})`)
+
+await editor()
+await db.query(`insert into movimientos_fiado (cliente_id, tipo, monto, descripcion) values ($1, 'abono', 80, 'Pago en tienda')`, [ANA])
+const pedidosAntes = await cuenta('select count(*)::int n from pedidos where cliente_id = $1', [ANA])
+const fiadoAntes = await cuenta('select count(*)::int n from movimientos_fiado where cliente_id = $1', [ANA])
+const kardexAntes = await cuenta('select count(*)::int n from movimientos_inventario')
+await como(ANA)
+const listo = await borrar()
+ok(Array.isArray(listo), `sin deuda ni pedidos en curso, la cuenta se borra (${listo.message ?? 'ok'})`)
+ok(await cuenta('select count(*)::int n from auth.users where id = $1', [ANA]) === 0, 'su usuario ya no existe')
+ok(await cuenta('select count(*)::int n from perfiles where id = $1', [ANA]) === 0, 'ni su perfil, con nombre, teléfono y dirección')
+ok(await cuenta(`select count(*)::int n from pedidos where cliente_id is null and cliente_nombre = 'Cuenta borrada'
+  and direccion = '' and notas = ''`) === pedidosAntes && pedidosAntes > 0,
+  `sus ${pedidosAntes} pedidos quedan como ventas, sin nombre, dirección ni notas`)
+ok(await cuenta('select count(*)::int n from movimientos_fiado where cliente_id is null') === fiadoAntes && fiadoAntes > 0,
+  `sus ${fiadoAntes} movimientos de fiado quedan en la caja, sin cliente`)
+ok(await cuenta('select count(*)::int n from movimientos_inventario') === kardexAntes, 'el kardex no cambia')
+await como(DUENO)
+const vistos = await intenta('select count(*)::int n from pedidos where cliente_id is null')
+ok(Array.isArray(vistos) && vistos[0].n === pedidosAntes, 'el tendero sigue viendo esas ventas')
+
+await como(BETO)
+ok(Array.isArray(await borrar()), 'un cliente sin pedidos borra su cuenta')
+ok(await cuenta('select count(*)::int n from auth.users where id = $1', [BETO]) === 0, 'y su usuario ya no existe')
+
+await como(null, 'anon')
+const sinSesion = await borrar()
+ok(sinSesion instanceof Error, 'sin sesión no se puede llamar')
 
 console.log(fallos ? `\n${fallos} FALLAS` : '\nTodo en orden')
 process.exit(fallos ? 1 : 0)

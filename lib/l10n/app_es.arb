@@ -125,6 +125,19 @@
   "catalogoSinResultados": "Sin resultados",
   "catalogoSinResultadosDetalle": "Prueba con otro nombre o cambia de categoría.",
   "cerrarSesion": "Cerrar sesión",
+  "borrarCuenta": "Borrar mi cuenta",
+  "borrarCuentaDetalle": "Se borran tu nombre, tu celular y tu dirección. Tus pedidos y pagos quedan en las cuentas de la tienda, sin tu nombre. No se puede deshacer.",
+  "borrarCuentaConfirmar": "Borrar cuenta",
+  "avisoTenderoNoSeBorra": "La cuenta del tendero no se borra desde la app.",
+  "avisoPedidosEnCurso": "Tienes pedidos en curso. Espera a que la tienda los entregue o los cancele antes de borrar tu cuenta.",
+  "avisoDeudaAlBorrar": "Debes {deuda} de fiado. Págalo en la tienda antes de borrar tu cuenta.",
+  "@avisoDeudaAlBorrar": {
+    "placeholders": {
+      "deuda": {
+        "type": "String"
+      }
+    }
+  },
   "checkoutEntrega": "Entrega",
   "checkoutFormaPago": "Forma de pago",
   "checkoutNota": "Nota para la tienda (opcional)",

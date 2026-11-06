@@ -35,6 +35,11 @@ enum Aviso {
   /// Datos: `disponible`, `limite`.
   cupoInsuficiente,
   demasiadosPedidos,
+  tenderoNoSeBorra,
+  pedidosEnCurso,
+
+  /// Datos: `deuda` (en soles).
+  deudaAlBorrar,
 }
 
 class ErrorApp implements Exception {
@@ -81,6 +86,12 @@ abstract class AuthRepo {
   });
 
   Future<void> cerrarSesion();
+
+  /// Borra la cuenta de quien está dentro y cierra la sesión. Frena con
+  /// [Aviso.tenderoNoSeBorra], [Aviso.pedidosEnCurso] o [Aviso.deudaAlBorrar];
+  /// si no, lo personal se va y sus pedidos y fiado quedan para la tienda,
+  /// sin cliente (`borrar_mi_cuenta` en schema.sql).
+  Future<void> borrarCuenta();
 
   Future<Perfil> guardarPerfil(Perfil perfil);
 

@@ -408,10 +408,10 @@ class MemAuthRepo implements AuthRepo {
     // En demo el correo elige el rol: cualquier cosa con "tendero" entra
     // como dueño de la tienda; el resto, como cliente.
     final esTendero = email.toLowerCase().contains('tendero');
-    final p = _a.perfiles.firstWhere(
-      (x) => esTendero ? x.rol == Rol.tendero : x.id == 'u-cliente',
-      orElse: () => _a.perfiles.first,
-    );
+    final p = esTendero
+        ? _a.perfiles.firstWhere((x) => x.rol == Rol.tendero,
+            orElse: () => _a.perfiles.first)
+        : _clienteDemo();
     _entrar(p);
     return p;
   }
@@ -426,11 +426,21 @@ class MemAuthRepo implements AuthRepo {
   @override
   Future<Perfil?> entrarConGoogle() async {
     await Future<void>.delayed(const Duration(milliseconds: 250));
-    final p = _a.perfiles.firstWhere(
-      (x) => x.id == 'u-cliente',
-      orElse: () => _a.perfiles.first,
-    );
+    final p = _clienteDemo();
     _entrar(p);
+    return p;
+  }
+
+  /// El vecino de ejemplo. Si en la demo alguien borró su cuenta, vuelve a
+  /// nacer limpio: entrar como cliente no puede terminar dentro del panel del
+  /// tendero.
+  Perfil _clienteDemo() {
+    for (final x in _a.perfiles) {
+      if (x.id == 'u-cliente') return x;
+    }
+    const p = Perfil(id: 'u-cliente', nombre: 'Jorge', rol: Rol.cliente);
+    _a.perfiles.add(p);
+    _a.limites[p.id] = 150;
     return p;
   }
 
@@ -461,6 +471,66 @@ class MemAuthRepo implements AuthRepo {
   Future<void> cerrarSesion() async {
     _actual = null;
     _ctrl.add(null);
+  }
+
+  /// Las mismas reglas que `borrar_mi_cuenta` en schema.sql.
+  @override
+  Future<void> borrarCuenta() async {
+    final yo = _actual;
+    if (yo == null) {
+      throw ErrorApp('Inicia sesión para continuar.', aviso: Aviso.sesionRequerida);
+    }
+    if (yo.rol == Rol.tendero) {
+      throw ErrorApp('La cuenta del tendero no se borra desde la app.',
+          aviso: Aviso.tenderoNoSeBorra);
+    }
+    if (_a.pedidos.any((p) =>
+        p.clienteId == yo.id &&
+        p.estado != EstadoPedido.entregado &&
+        p.estado != EstadoPedido.cancelado)) {
+      throw ErrorApp(
+          'Tienes pedidos en curso. Espera a que la tienda los entregue o los cancele antes de borrar tu cuenta.',
+          aviso: Aviso.pedidosEnCurso);
+    }
+    final deuda = _a.movimientos
+        .where((m) => m.clienteId == yo.id)
+        .fold<double>(0, (s, m) => s + m.efecto);
+    if (deuda > 0.004) {
+      throw ErrorApp('Debes S/ ${deuda.toStringAsFixed(2)} de fiado. Págalo en la tienda antes de borrar tu cuenta.',
+          aviso: Aviso.deudaAlBorrar, datos: {'deuda': deuda});
+    }
+
+    for (var i = 0; i < _a.pedidos.length; i++) {
+      final p = _a.pedidos[i];
+      if (p.clienteId != yo.id) continue;
+      _a.pedidos[i] = Pedido(
+        id: p.id,
+        clienteId: '',
+        clienteNombre: 'Cuenta borrada',
+        items: p.items,
+        creadoEn: p.creadoEn,
+        estado: p.estado,
+        metodoPago: p.metodoPago,
+        estadoPago: p.estadoPago,
+        referenciaPago: p.referenciaPago,
+      );
+    }
+    for (var i = 0; i < _a.movimientos.length; i++) {
+      final m = _a.movimientos[i];
+      if (m.clienteId != yo.id) continue;
+      _a.movimientos[i] = MovimientoFiado(
+        id: m.id,
+        clienteId: '',
+        tipo: m.tipo,
+        monto: m.monto,
+        fecha: m.fecha,
+        descripcion: m.descripcion,
+        pedidoId: m.pedidoId,
+      );
+    }
+    _a.perfiles.removeWhere((p) => p.id == yo.id);
+    _a.limites.remove(yo.id);
+    await cerrarSesion();
   }
 
   @override

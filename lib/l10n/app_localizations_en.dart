@@ -255,6 +255,29 @@ class LEn extends L {
   String get cerrarSesion => 'Sign out';
 
   @override
+  String get borrarCuenta => 'Delete my account';
+
+  @override
+  String get borrarCuentaDetalle =>
+      'Your name, phone and address are deleted. Your orders and payments stay in the store\'s books, without your name. This can\'t be undone.';
+
+  @override
+  String get borrarCuentaConfirmar => 'Delete account';
+
+  @override
+  String get avisoTenderoNoSeBorra =>
+      'The shopkeeper\'s account can\'t be deleted from the app.';
+
+  @override
+  String get avisoPedidosEnCurso =>
+      'You have orders in progress. Wait until the store delivers or cancels them before deleting your account.';
+
+  @override
+  String avisoDeudaAlBorrar(String deuda) {
+    return 'You owe $deuda on credit. Pay it at the store before deleting your account.';
+  }
+
+  @override
   String get checkoutEntrega => 'Delivery';
 
   @override

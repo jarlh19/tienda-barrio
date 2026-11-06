@@ -257,6 +257,29 @@ class LEs extends L {
   String get cerrarSesion => 'Cerrar sesión';
 
   @override
+  String get borrarCuenta => 'Borrar mi cuenta';
+
+  @override
+  String get borrarCuentaDetalle =>
+      'Se borran tu nombre, tu celular y tu dirección. Tus pedidos y pagos quedan en las cuentas de la tienda, sin tu nombre. No se puede deshacer.';
+
+  @override
+  String get borrarCuentaConfirmar => 'Borrar cuenta';
+
+  @override
+  String get avisoTenderoNoSeBorra =>
+      'La cuenta del tendero no se borra desde la app.';
+
+  @override
+  String get avisoPedidosEnCurso =>
+      'Tienes pedidos en curso. Espera a que la tienda los entregue o los cancele antes de borrar tu cuenta.';
+
+  @override
+  String avisoDeudaAlBorrar(String deuda) {
+    return 'Debes $deuda de fiado. Págalo en la tienda antes de borrar tu cuenta.';
+  }
+
+  @override
   String get checkoutEntrega => 'Entrega';
 
   @override

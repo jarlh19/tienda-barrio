@@ -552,6 +552,42 @@ abstract class L {
   /// **'Cerrar sesión'**
   String get cerrarSesion;
 
+  /// No description provided for @borrarCuenta.
+  ///
+  /// In es, this message translates to:
+  /// **'Borrar mi cuenta'**
+  String get borrarCuenta;
+
+  /// No description provided for @borrarCuentaDetalle.
+  ///
+  /// In es, this message translates to:
+  /// **'Se borran tu nombre, tu celular y tu dirección. Tus pedidos y pagos quedan en las cuentas de la tienda, sin tu nombre. No se puede deshacer.'**
+  String get borrarCuentaDetalle;
+
+  /// No description provided for @borrarCuentaConfirmar.
+  ///
+  /// In es, this message translates to:
+  /// **'Borrar cuenta'**
+  String get borrarCuentaConfirmar;
+
+  /// No description provided for @avisoTenderoNoSeBorra.
+  ///
+  /// In es, this message translates to:
+  /// **'La cuenta del tendero no se borra desde la app.'**
+  String get avisoTenderoNoSeBorra;
+
+  /// No description provided for @avisoPedidosEnCurso.
+  ///
+  /// In es, this message translates to:
+  /// **'Tienes pedidos en curso. Espera a que la tienda los entregue o los cancele antes de borrar tu cuenta.'**
+  String get avisoPedidosEnCurso;
+
+  /// No description provided for @avisoDeudaAlBorrar.
+  ///
+  /// In es, this message translates to:
+  /// **'Debes {deuda} de fiado. Págalo en la tienda antes de borrar tu cuenta.'**
+  String avisoDeudaAlBorrar(String deuda);
+
   /// No description provided for @checkoutEntrega.
   ///
   /// In es, this message translates to:
