@@ -1,10 +1,17 @@
 -- Esquema de la tienda de barrio para Supabase.
 -- Ejecutar completo en el SQL Editor del proyecto (una sola vez).
 
--- En Supabase toda función nueva del esquema public nace ejecutable por anon
--- y authenticated, o sea por cualquiera con la clave pública. Aquí no: las que
--- la app llama se habilitan una por una al final de este archivo.
-alter default privileges in schema public revoke execute on functions from anon, authenticated;
+-- En Supabase toda tabla, secuencia y función nueva del esquema public nace
+-- abierta para anon y authenticated, o sea para cualquiera con la clave
+-- pública, y Postgres le da además execute a PUBLIC sobre toda función nueva.
+-- Aquí no: cada tabla recibe su grant explícito más abajo (y RLS decide las
+-- filas), y las funciones que la app llama se habilitan una por una al final.
+-- El revoke a PUBLIC va sin "in schema" porque los privilegios por defecto de
+-- un esquema solo suman a los globales. service_role conserva lo suyo.
+alter default privileges in schema public revoke all on tables from anon, authenticated;
+alter default privileges in schema public revoke all on sequences from anon, authenticated;
+alter default privileges in schema public revoke all on functions from anon, authenticated;
+alter default privileges revoke execute on functions from public;
 
 -- ---------------------------------------------------------------- perfiles --
 create table if not exists public.perfiles (
@@ -615,6 +622,22 @@ drop policy if exists perfiles_editar on public.perfiles;
 create policy perfiles_editar on public.perfiles
   for update using (id = auth.uid() or public.es_tendero())
   with check (id = auth.uid() or public.es_tendero());
+
+-- -------------------------------------------------------------- tablas ----
+-- Las tablas de la app, con los permisos que usa la API. Qué filas ve o toca
+-- cada quien lo decide RLS. Si agregas una tabla, agrégala aquí y actívale RLS.
+grant select, insert, update, delete on
+  public.perfiles,
+  public.categorias,
+  public.productos,
+  public.tienda,
+  public.pedidos,
+  public.movimientos_inventario,
+  public.movimientos_fiado,
+  public.insumos,
+  public.movimientos_insumo,
+  public.recetas
+to anon, authenticated;
 
 -- RLS decide qué filas, no qué columnas: sin esto un cliente podría ponerse
 -- rol de tendero o subirse el cupo con una llamada a la API. Desde la app
