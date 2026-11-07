@@ -45,6 +45,20 @@ que Google reconozca al APK por su huella SHA-1; la *audiencia* del token es
 quien lo va a leer, que es Supabase. Poner el de Android hace que Supabase
 rechace el token sin explicar por qué.
 
+**La vuelta a la app** (añadido el 6 de noviembre de 2026). `signInWithOAuth` sin
+`redirectTo` manda de regreso a la *Site URL* del proyecto, una página web: en
+el celular la sesión nunca llegaba a la app. Ahora vuelve a
+`com.jorge.tiendabarrio://login-callback` (`Config.volverDeGoogle`), declarado
+como `intent-filter` en Android y `CFBundleURLTypes` en iOS. El esquema no lleva
+el guion bajo del `applicationId` porque un esquema de URL no lo admite. El
+enlace lo atiende Supabase con `app_links`; el de Flutter queda apagado
+(`flutter_deeplinking_enabled` y `FlutterDeepLinkingEnabled` en falso), o
+`go_router` intentaría abrir `/login-callback` como pantalla. Otra app podría
+declarar el mismo esquema y recibir el enlace, pero con PKCE el código que
+trae no sirve sin el verificador que queda guardado en este celular. Para
+encenderlo, además del ID de cliente, hay que agregar esa URL en Supabase →
+Authentication → URL Configuration → Redirect URLs.
+
 El formulario se queda. No todos los celulares tienen los servicios de Google,
 y el teléfono que se presta en el mostrador no debería arrastrar la cuenta del
 dueño.

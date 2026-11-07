@@ -107,7 +107,10 @@ class SbAuthRepo implements AuthRepo {
       // fuera de la app y vuelve por redirección, así que aquí no hay perfil
       // que devolver — llega después por `cambios`. El selector de cuentas del
       // sistema vuelve cuando se reinstale `google_sign_in`.
-      await _c.auth.signInWithOAuth(OAuthProvider.google);
+      await _c.auth.signInWithOAuth(
+        OAuthProvider.google,
+        redirectTo: Config.volverDeGoogle(web: kIsWeb),
+      );
       return null;
     } catch (e) {
       _traducir(e);

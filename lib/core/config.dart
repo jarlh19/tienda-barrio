@@ -37,6 +37,16 @@ class Config {
   static bool get hayGoogle =>
       googleServerClientId.isNotEmpty || googleClientIdIos.isNotEmpty;
 
+  /// A dónde vuelve la entrada con Google. En el celular, al enlace propio de
+  /// la app (declarado en AndroidManifest.xml e Info.plist, y que hay que
+  /// agregar en Supabase → Authentication → URL Configuration → Redirect URLs).
+  /// Sin él, Supabase manda a la Site URL, una página web, y la app nunca
+  /// recibe la sesión. El código que trae el enlace no sirve solo: con PKCE
+  /// hace falta el verificador que quedó guardado en este celular. En la web,
+  /// `null`: vuelve a la misma página.
+  static String? volverDeGoogle({required bool web}) =>
+      web ? null : 'com.jorge.tiendabarrio://login-callback';
+
   static bool get modoDemo => !hayBackend;
 
   /// Nombre por defecto; los datos de cobro (numero y QR de Yape/Plin) los
