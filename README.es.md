@@ -379,6 +379,11 @@ Las decisiones que costaría revertir están en `docs/decisions/`:
 - **Precio cambiado a mitad del pedido**: la base manda sobre el precio (ADR-0003),
   así que si sube entre que el cliente arma el carrito y confirma, el total puede
   diferir de lo que vio. Falta avisárselo en pantalla.
-- **Firma para Google Play**: el APK se firma hoy con la llave de depuración
-  (`android/app/build.gradle.kts`). Instala en un celular, pero para publicar
-  hace falta generar una llave propia y un `key.properties` fuera del proyecto.
+- **Firma para Google Play**: falta generar la llave propia. Gradle la toma de
+  `android/key.properties` (fuera de git) y, sin ella, firma con la de
+  depuración, que sirve para `flutter run --release` y no para repartir. El
+  release que se reparte se compila con
+  `dart run tool/compilar_release.dart appbundle` (o `apk`): sale ofuscado,
+  guarda los símbolos en `~/simbolos-flutter/tienda_barrio/<versión>` para leer
+  errores con `flutter symbolize`, y se niega si falta la llave o si ya hay
+  símbolos de esa versión.

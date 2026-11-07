@@ -396,6 +396,11 @@ Decisions that would be costly to reverse are in `docs/decisions/` (Spanish):
 - **Price changed mid-order**: the database decides the price (ADR-0003), so if
   it goes up between building the cart and confirming, the total may differ
   from what the customer saw. The app does not warn about it yet.
-- **Google Play signing**: the APK is currently signed with the debug key
-  (`android/app/build.gradle.kts`). It installs on a phone, but publishing
-  requires generating a proper key and a `key.properties` outside the project.
+- **Google Play signing**: the proper key still has to be generated. Gradle
+  reads it from `android/key.properties` (outside git) and, without it, signs
+  with the debug key, which is fine for `flutter run --release` but not for
+  distribution. The release that ships is built with
+  `dart run tool/compilar_release.dart appbundle` (or `apk`): it is obfuscated,
+  keeps the symbols in `~/simbolos-flutter/tienda_barrio/<version>` so errors
+  can be read with `flutter symbolize`, and refuses to build without the key or
+  over the symbols of an already built version.
