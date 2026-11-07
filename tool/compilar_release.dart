@@ -81,6 +81,10 @@ Future<void> main(List<String> args) async {
   stdout.writeln('flutter ${argumentos.join(' ')}');
   final proceso = await Process.start('flutter', argumentos, runInShell: true, mode: ProcessStartMode.inheritStdio);
   final salida = await proceso.exitCode;
-  if (salida == 0) stdout.writeln('Símbolos guardados en $simbolos (fuera del repo; no los borres).');
+  if (salida == 0) {
+    stdout.writeln(
+      'Símbolos guardados en $simbolos (fuera del repo; no los borres).',
+    );
+  }
   exit(salida);
 }
